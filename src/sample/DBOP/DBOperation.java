@@ -306,18 +306,19 @@ public class DBOperation {
 	 * @param hostID  主机ID
 	 * @return
 	 */
-	public  String judge(String userID) throws SQLException {
-		String result = null;
+	public  String[] judge(String userID) throws SQLException {
+		String result[] = new String[4];
 		ResultSet rs = null;
 		Statement stmt = null;
 		stmt = con.createStatement();
 		//根据用户ID获得该用户的密码
-		System.out.println(userID+"---------");
-		String sql = "SELECT * FROM userinfo where userID = '"+userID+"'";
+		String sql = "SELECT * FROM userinfo where userID="+userID;
 		rs = stmt.executeQuery(sql);
 		while(rs.next()) {
-			System.out.println(rs.getString(1));
-			result = rs.getString("pwd");
+			result[0] = rs.getString("userID");
+			result[1] = rs.getString("pwd");
+			result[2] = rs.getString("time");
+			result[3] = rs.getString("random");		
 		}
 		
 		dbcManager.close();
@@ -341,6 +342,35 @@ public class DBOperation {
 		}
 		return result;
 	}
+	
+	/**@author WZY
+	 * 根据用户名的ID得到 用于的密码
+	 * @param userID 用户ID
+	 * @param time  系统当前时间
+	 * @param num 生成的随机数
+	 * @return
+	 */
+	public int  updateAuthentication(String userID,String time, int num) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		//获得该用户可操作的所有主机
+		String sql = "UPDATE  userinfo  SET  time = '"+time+"' , "+"random = "+num+" WHERE userID='"+userID+"'";
+		System.out.println(sql);
+		int  flag =  stmt.executeUpdate(sql);
+		//释放资源
+		dbcManager.close();
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return flag;
+	}
+
 
 	public static void main(String[] args) {
 		

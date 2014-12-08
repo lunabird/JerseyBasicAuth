@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -55,13 +56,21 @@ public class OSBaseResource {
 		return res;
 	}
 	
-	/*@GET
+	@POST
 	@Path("/sysService")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public void getSysService(){
+	public Response getSysService(){
+		Response res;
 		OSBase ob = new OSBase();
+		if (true) {
+			res =  Response.ok("success").build();
+		} else {
+			res =  Response.ok("failed").build();
+		}
+		return res;
 		
-	}*/
+	}
 	
 	
 	/**
@@ -118,6 +127,31 @@ public class OSBaseResource {
 		}
 		return Response.ok("get system log failed").build();
 	}
+	
+	@PUT
+	@Path("/IPAdd")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response changeIP(@QueryParam("uid") String uid,
+			@QueryParam("ip") String ip, 
+			@QueryParam("mac") String mac,
+			@QueryParam("changeToIP") String changeToIP,
+			@QueryParam("mask") String mask,
+			@QueryParam("gateway") String gateway,
+			@QueryParam("dns") List<String> dns
+			){
+		
+		Response res;
+		OSBase ob = new OSBase();
+		String[] dnsArr = (String[])dns.toArray(new String[dns.size()]);
+		if (ob.sendChangeIPMsg(uid, ip, mac,changeToIP,mask, gateway,dnsArr)) {
+			res =  Response.ok("chang IP success").build();
+		} else {
+			res =  Response.ok("chang IP failed").build();
+		}
+		
+		return res;
+	}
 	/**
 	 * ÐÞ¸ÄIP on Linux
 	 * @param uid
@@ -134,7 +168,7 @@ public class OSBaseResource {
 	@Path("/IPAdd_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeIP(@QueryParam("uid") String uid,
+	public Response changeIPOnLinux(@QueryParam("uid") String uid,
 			@QueryParam("ip") String ip, 
 			@QueryParam("deviceName") String deviceName,
 			@QueryParam("mask") String mask,
@@ -143,7 +177,7 @@ public class OSBaseResource {
 		
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendChangeIPMsg(uid, ip, deviceName,mask, changeToIP)) {
+		if (ob.sendChangeIPOnLinuxMsg(uid, ip, deviceName,mask, changeToIP)) {
 			res =  Response.ok("chang IP success").build();
 		} else {
 			res =  Response.ok("chang IP failed").build();
@@ -170,25 +204,19 @@ public class OSBaseResource {
 	public Response changeAffiIP(@QueryParam("uid") String uid,
 			@QueryParam("ip") String ip, 
 			@QueryParam("mac") String mac,
-			@QueryParam("changeToIP") String changeToIP,
-			@QueryParam("mask") String mask,
-			@QueryParam("gateway") String gateway,
-			@QueryParam("dns") List<String> dns,
 			@QueryParam("affiIp") List<String> affiIP, 
 			@QueryParam("affiMask") List<String> affiMask,
 			@QueryParam("affiGateway") List<String> affiGateway){
 		Response res;
 		OSBase ob = new OSBase();
-		String[] dnsArr = (String[])dns.toArray(new String[dns.size()]);
 		String[] affiIPArr = (String[])affiIP.toArray(new String[affiIP.size()]);
 		String[] affiMaskArr = (String[])affiMask.toArray(new String[affiMask.size()]);
 		String[] affiGatewayArr = (String[])affiGateway.toArray(new String[affiGateway.size()]);
-		if(ob.sendChangeAffiIPMsg(uid, ip, mac, changeToIP, mask, gateway, dnsArr, affiIPArr, affiMaskArr, affiGatewayArr)){
+		if(ob.sendChangeAffiIPMsg(uid, ip, mac,  affiIPArr, affiMaskArr, affiGatewayArr)){
 			res =  Response.ok("chang windows affi IP success").build();
 		} else {
 			res =  Response.ok("chang windows affi IP failed").build();
 		}
-		
 		return res;
 	}
 	

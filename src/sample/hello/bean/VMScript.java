@@ -9,6 +9,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import edu.xidian.enc.MD5Util;
+import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
 import edu.xidian.message.MsgType;
 
@@ -20,19 +22,14 @@ public class VMScript {
 
 			Message msg = new Message(MsgType.executeVMScript, uid,
 					file.getName());
-			/*
-			 * //加密 String datatemp = SerializeUtil.serialize(msg); String str =
-			 * MD5Util.convertMD5(datatemp); //传输 ObjectOutputStream oos = new
-			 * ObjectOutputStream( socket.getOutputStream());
-			 * oos.writeObject(str); //获得反馈信息 ObjectInputStream ois = new
-			 * ObjectInputStream( socket.getInputStream()); str =
-			 * (String)ois.readObject(); //解密 String str2 =
-			 * MD5Util.convertMD5(str); msg =
-			 * (Message)SerializeUtil.deserialize(str2);
-			 */
-			 ObjectOutputStream oos=new ObjectOutputStream(socket.getOutputStream());
-		     oos.writeObject(msg);
-		     oos.flush();
+			// 加密
+			String datatemp = SerializeUtil.serialize(msg);
+			String str = MD5Util.convertMD5(datatemp);
+			// 传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			oos.flush();
 			// 发送文件
 			System.out.println("文件长度为：" + file.length());
 			DataOutputStream dos = new DataOutputStream(
@@ -64,10 +61,13 @@ public class VMScript {
 			dos.flush();
 			System.out.println("传输完成");
 
+			// 获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			msg = (Message) ois.readObject();
-
+			str = (String) ois.readObject();
+			// 解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message) SerializeUtil.deserialize(str2);
 			if (msg.getType().equals(MsgType.executeVMScript)) {
 				String ret = (String) msg.getValues();
 				if (ret.equals("success") || ret.equals("executing")) {
@@ -76,7 +76,7 @@ public class VMScript {
 				System.out.println(ret);
 			}
 			socket.close();
-			
+
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnknownHostException e) {

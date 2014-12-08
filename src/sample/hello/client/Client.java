@@ -52,31 +52,29 @@ public class Client extends HttpServlet {
 			throws ServletException, IOException {
 		PrintWriter out = null;
 		BufferedReader in = null;
-		//String urlStr = "http://localhost:8080/MyJersey/rest/OSBase/vmSysPwd?uid=1&ip=192.168.0.217&userName=zz&passwd=123456";
+		String result = null;
+		boolean flag = false;
+		//String urlStr = "http://localhost:8080/JerseyBasicAuth/rest/OSBase/vmSysPwd?uid=1&ip=192.168.0.217&userName=wzy&passwd=123456";
 		String urlStr = (String)request.getParameter("url");
-		String user = (String)request.getParameter("username");
-		String pass = (String)request.getParameter("pwd");
-//		System.out.println(urlStr);
+		String token = (String)request.getParameter("token");
+		String style = (String)request.getParameter("patten");
+		
 		try{
-			String result = "";
-	        String authStr = user + ":" + pass;
-//	        System.out.println();
-	        String authEncoded = new BASE64Encoder().encode(authStr.getBytes());
-	       
+			
 	        // URL url = new URL ("http://ip:port/download_url");
 	        URL url = new URL(urlStr);
 	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-	        connection.setRequestMethod("PUT");
+	        connection.setRequestMethod(style);
 	        connection.setDoOutput(true);
-	        connection.setRequestProperty("authorization", "Basic "+authEncoded);
+	        connection.setRequestProperty("authorization", "Basic "+ token);
 	
 	        connection.connect();
 	        // 获取所有响应头字段
-	         Map<String, List<String>> map = connection.getHeaderFields();
+	       /*  Map<String, List<String>> map = connection.getHeaderFields();
             // 遍历所有的响应头字段
             for (String key : map.keySet()) {
                 System.out.println(key + "--->" + map.get(key));
-            }
+            }*/
 	        InputStream content = (InputStream)connection.getInputStream();
             in   =  new BufferedReader (new InputStreamReader (content));
             String line; 
@@ -84,6 +82,10 @@ public class Client extends HttpServlet {
             	result += line;
                 System.out.println(line);
             }
+            result = result.substring(4);
+            if(flag){
+            	request.getRequestDispatcher("/subdir/upload.jsp").forward(request, response);	
+            }else{
             response.setContentType("text/html;charset=UTF-8");  
             response.getWriter().println("<html>");  
             response.getWriter().println("<head>");     
@@ -94,6 +96,7 @@ public class Client extends HttpServlet {
             response.getWriter().println(result);
             response.getWriter().println("</body>");    
             response.getWriter().println("</html>"); 
+            }
 	    }
 		
 	    catch (Exception e) {
@@ -104,7 +107,9 @@ public class Client extends HttpServlet {
 	            response.getWriter().println("<title>返回信息</title>");      
 	            response.getWriter().println("</head>");    
 	            response.getWriter().println("<body>");     
-	            response.getWriter().println("错误信息：401");    
+	            response.getWriter().println("错误信息：401"); 
+	            response.getWriter().println("<br/>可能原因：<br/>Token已过期，请重新注册<br/>"); 
+	            response.getWriter().println("或者URL不正确"); 
 	            response.getWriter().println("</body>");    
 	            response.getWriter().println("</html>"); 
 	    	

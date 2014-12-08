@@ -42,11 +42,6 @@ public class AppResource {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/*if (true) {
-			res = Response.ok("chang passwd is already executing").build();
-		} else {
-			res = Response.noContent().build();
-		}*/
 		return res;
 	}
 	@POST
@@ -73,11 +68,6 @@ public class AppResource {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/*if (true) {
-			res = Response.ok("chang passwd is already executing").build();
-		} else {
-			res = Response.noContent().build();
-		}*/
 		return res;
 	}
 	@POST

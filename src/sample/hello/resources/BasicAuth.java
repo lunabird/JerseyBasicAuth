@@ -40,6 +40,6 @@ public class BasicAuth {
 		//Now we can convert the byte[] into a splitted array :
 		//	- the first one is login,
 		//	- the second one password
-		return new String(decodedBytes).split(":", 2);
+		return new String(decodedBytes).split(":", 3);
 	}
 }

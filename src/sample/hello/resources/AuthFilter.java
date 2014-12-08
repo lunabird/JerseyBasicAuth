@@ -1,12 +1,17 @@
 package sample.hello.resources;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
-
 import sample.DBOP.DBOperation;
-
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 
@@ -16,7 +21,9 @@ public class AuthFilter implements ContainerRequestFilter {
 	 * @param containerRequest The request from Tomcat server
 	 * @return 
 	 */
-	public ContainerRequest filter(ContainerRequest containerRequest) throws WebApplicationException {
+	private static boolean flag = false;
+	@SuppressWarnings("null")
+	public ContainerRequest filter(ContainerRequest containerRequest) {
 		//GET, POST, PUT, DELETE, ...
 		String method = containerRequest.getMethod();
 		// myresource/get/56bCA for example
@@ -37,42 +44,79 @@ public class AuthFilter implements ContainerRequestFilter {
 
 		//lap : loginAndPassword
 		String[] lap = BasicAuth.decode(auth);
-		System.out.println(lap[0]+"===="+lap[1]);
-		//If login or password fail
-		if(lap == null || lap.length != 2){
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+
+		//判断时间是否过期
+		String authentication = null;
+		DBOperation opt = new DBOperation();
+		String time = null;
+		String pwd = null;
+		String random = null;
+		try {
+			time = opt.judge(lap[0])[2];//从数据库中取出存放时间
+			pwd = opt.judge(lap[0])[1];//从数据库中取出密码
+			random = opt.judge(lap[0])[3];//从数据库中取出随机数
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
+		String [] sql = time.split(" ");
+		String [] sqltime = sql[1].split(":");
+		int h1 = Integer.parseInt(sqltime[0]);
+		int m1 = Integer.parseInt(sqltime[1]);
+		
+		int total1 = h1 * 60 + m1;
+		//获取当前时间
+		Date now = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//可以方便地修改日期格式
+		String tt = dateFormat.format(now);
+		String [] t = tt.split(" ");
+		String [] te = t[1].split(":");
+		int h2 = Integer.parseInt(te[0]);
+		int m2 = Integer.parseInt(te[1]);
+	
+		int total2 = h2 * 60 + m2;
+		
+		if(sql[0].equals(t[0])){
+				if((total2-total1)<=10){
+					System.out.println("不用重新登录");
+					//判断密码与随机数是否匹配
+					if(lap[1].equals(pwd)&&(lap[2].equals(random))){
+			        	return containerRequest;
+			        }else{
+			        	System.out.println("401");
+			        	System.out.println("执行错误");
+			        	return null;
+			        }
+				}else{
+					flag = true;
+					System.out.println("Token已过期，请重新登录");	
+					return null;
+				}
+		}else{
+			flag = true;
+			System.out.println("Token已过期，请重新登录");
+			return null;
+		}
+		
 
 		//DO YOUR DATABASE CHECK HERE (replace that line behind)...
 		//User authentificationResult =  AuthentificationThirdParty.authentification(lap[0], lap[1]);
-		/*String authentificationResult = "ok"; 
-		//Our system refuse login and password
-				if(authentificationResult == null){
-					throw new WebApplicationException(Status.UNAUTHORIZED);
-				}*/
-				
-		DBOperation opt = new DBOperation();
-        String result=null;
-		try {
-			result = opt.judge(lap[0]);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        if(lap[1].equals(result)){
-        	System.out.println("success+===============");
-        	return containerRequest;
-        }else{
-        	System.out.println("401");
-        	System.out.println("执行错误");
-        	return null;
+		
+			
+        
         }
 		
 		
 		
 
 		//TODO : HERE YOU SHOULD ADD PARAMETER TO REQUEST, TO REMEMBER USER ON YOUR REST SERVICE...
-		
-		
-	}
+	 public void init(FilterConfig config) throws ServletException { 
+	        //读取错误信息提示页面路径  
+	       boolean flag = false;
+	    } 
+	 
+	 public void doGet(HttpServletRequest request, HttpServletResponse response)
+				throws ServletException, IOException{
+					request.getRequestDispatcher("/subdir/authentication.jsp");
+				}
 }

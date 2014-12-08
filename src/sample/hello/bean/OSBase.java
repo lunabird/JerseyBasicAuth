@@ -280,7 +280,7 @@ public class OSBase {
 	 * @param dns
 	 * @return
 	 */
-	public boolean sendChangeIPMsg(String uid,String ip,String deviceName,String mask,String changeToIP){
+	public boolean sendChangeIPOnLinuxMsg(String uid,String ip,String deviceName,String mask,String changeToIP){
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9000);
@@ -330,7 +330,7 @@ public class OSBase {
 		return false;
 	}
 	/**
-	 * 修改主机附属IP
+	 * windows修改主机affi IP
 	 * @param uid
 	 * @param ip
 	 * @param mac
@@ -341,7 +341,48 @@ public class OSBase {
 	 * @param affiMask
 	 * @return
 	 */
-	public boolean sendChangeAffiIPMsg(String uid, String ip, String mac,String changeToIp,
+	public boolean sendChangeAffiIPMsg(String uid, String ip, String mac, String[] affiIP,
+			String[] affiMask,String[] affiGateway) {
+		// 发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9000);
+			Object[] values = new Object[3];
+			values[0] = affiIP;
+			values[1] = affiMask;
+			values[2] = affiGateway;
+			Message msg = new Message(MsgType.changeAffiIP, uid, values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+            String str = MD5Util.convertMD5(datatemp);
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (String)ois.readObject();
+			//解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message)SerializeUtil.deserialize(str2); 
+			if (msg.getType().equals(MsgType.changeAffiIP)) {
+				String ret = (String)msg.getValues();
+				if(ret.equals("success")){
+					System.out.println("windows change affi ip :"+ret);
+					return true;
+				}
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	/*public boolean sendChangeAffiIPMsg(String uid, String ip, String mac,String changeToIp,
 			String mask,String gateway, String[] dns, String[] affiIP,
 			String[] affiMask,String[] affiGateway) {
 		// 发送Socket消息给Agent
@@ -366,7 +407,6 @@ public class OSBase {
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息  -------  -*-
-//			socket = new Socket(changeToIp, 9000);
 			socket.setSoTimeout(3000);
 			try {
 				ObjectInputStream ois = new ObjectInputStream(
@@ -377,11 +417,87 @@ public class OSBase {
 				msg = (Message) SerializeUtil.deserialize(str2);
 				if (msg.getType().equals(MsgType.changeAffiIP)) {
 					// 此处应该返回执行结果失败
+					String ret = (String)msg.getValues();
+					if(ret.equals("success")){
+						return true;
+					}else{
 					System.out.println("modify ip addr failed!");
+						return false;
+					}
 				}
 			} catch (SocketTimeoutException ste) {
 				// 修改数据库，将原来的ip改成changeToIP
 				System.out.println("modify ip addr success!");
+				DBOperation dbop = new DBOperation();
+				dbop.updateHostIP(ip, changeToIp);
+				return true;
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}*/
+	/**
+	 * windows change ip
+	 * @param uid
+	 * @param ip
+	 * @param mac
+	 * @param changeToIp
+	 * @param mask
+	 * @param gateway
+	 * @param dns
+	 * @return
+	 */
+	public boolean sendChangeIPMsg(String uid, String ip, String mac,String changeToIp,
+			String mask,String gateway, String[] dns) {
+		// 发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9000);
+			Object[] values = new Object[4];
+//			values[0] = mac;
+			values[0] = changeToIp;
+			values[1] = mask;
+			values[2] = gateway;
+			values[3] = dns;
+			
+			Message msg = new Message(MsgType.changeIP, uid, values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+            String str = MD5Util.convertMD5(datatemp);
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息  -------  -*-
+			socket.setSoTimeout(3000);
+			try {
+				ObjectInputStream ois = new ObjectInputStream(
+						socket.getInputStream());
+				str = (String) ois.readObject();
+				// 解密
+				String str2 = MD5Util.convertMD5(str);
+				msg = (Message) SerializeUtil.deserialize(str2);
+				if (msg.getType().equals(MsgType.changeIP)) {
+					// 此处应该返回执行结果失败
+					String ret = (String)msg.getValues();
+					if(ret.equals("success")){
+						return true;
+					}else{
+						System.out.println("modify ip addr failed!");
+						return false;
+					}
+				}
+			} catch (SocketTimeoutException ste) {
+				// 修改数据库，将原来的ip改成changeToIP
+				System.out.println("modify windows ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIp);
 				return true;
