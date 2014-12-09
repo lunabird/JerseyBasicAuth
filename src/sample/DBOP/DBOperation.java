@@ -312,7 +312,7 @@ public class DBOperation {
 		Statement stmt = null;
 		stmt = con.createStatement();
 		//根据用户ID获得该用户的密码
-		String sql = "SELECT * FROM userinfo where userID="+userID;
+		String sql = "SELECT * FROM userinfo where userID= '"+userID+"'";
 		rs = stmt.executeQuery(sql);
 		while(rs.next()) {
 			result[0] = rs.getString("userID");

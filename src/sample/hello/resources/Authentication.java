@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
 import sample.DBOP.DBOperation;
 
 import Decoder.BASE64Encoder;
@@ -72,10 +75,18 @@ public class Authentication extends HttpServlet {
 		        	authentication = new BASE64Encoder().encode(auth.getBytes());
 		        	System.out.println(authentication);
 		        	request.getSession().setAttribute("authentication",  authentication);
-		        	request.getRequestDispatcher("/subdir/login.jsp?authentication="+authentication).forward(request, response);
+		        	JSONObject ja = new JSONObject();
+		        	ja.put("authentication", authentication);
+		        	out.print(ja);
+		        	out.flush();
+		        	out.close();
+//		        	request.getRequestDispatcher("/subdir/login.jsp?authentication="+authentication).forward(request, response);
 				}
 		}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		

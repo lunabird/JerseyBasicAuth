@@ -40,6 +40,7 @@ public class AuthFilter implements ContainerRequestFilter {
 		//If the user does not have the right (does not provide any HTTP Basic Auth)
 		if(auth == null){
 			throw new WebApplicationException(Status.UNAUTHORIZED);
+			
 		}
 
 		//lap : loginAndPassword
@@ -81,7 +82,9 @@ public class AuthFilter implements ContainerRequestFilter {
 					System.out.println("不用重新登录");
 					//判断密码与随机数是否匹配
 					if(lap[1].equals(pwd)&&(lap[2].equals(random))){
-			        	return containerRequest;
+						System.out.println("containerRequest:"+containerRequest.getAbsolutePath());
+						containerRequest.setUris(containerRequest.getBaseUri(), containerRequest.getAbsolutePathBuilder().queryParam("uid",lap[0]).build());
+						return containerRequest;
 			        }else{
 			        	System.out.println("401");
 			        	System.out.println("执行错误");
