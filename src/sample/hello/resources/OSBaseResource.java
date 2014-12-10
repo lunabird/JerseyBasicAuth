@@ -49,31 +49,12 @@ public class OSBaseResource {
 			@QueryParam("passwd") String passwd) {
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
-//		if(true){
-			res =  Response.ok("change passwd success").build();
+//		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
+		if(true){
+			res =  Response.ok("chang passwd success").build();
 		} else {
-			res =  Response.ok("change passwd failed").build();
+			res =  Response.ok("chang passwd failed").build();
 		}
-		return res;
-	}
-	@PUT
-	@Path("/vmSysPwd_json")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response changePasswd_json(@QueryParam("uid") String uid,
-			String json) {
-		Response res;
-		try {
-			JSONObject o = new JSONObject(json);
-			System.out.println(o.get("ip"));
-			System.out.println(o.get("userName"));
-			System.out.println(o.get("passwd"));
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		res = Response.ok("change passwd success").build();
 		return res;
 	}
 	
@@ -166,9 +147,9 @@ public class OSBaseResource {
 		OSBase ob = new OSBase();
 		String[] dnsArr = (String[])dns.toArray(new String[dns.size()]);
 		if (ob.sendChangeIPMsg(uid, ip, mac,changeToIP,mask, gateway,dnsArr)) {
-			res =  Response.ok("change IP success").build();
+			res =  Response.ok("chang IP success").build();
 		} else {
-			res =  Response.ok("change IP failed").build();
+			res =  Response.ok("chang IP failed").build();
 		}
 		
 		return res;
@@ -199,9 +180,9 @@ public class OSBaseResource {
 		Response res;
 		OSBase ob = new OSBase();
 		if (ob.sendChangeIPOnLinuxMsg(uid, ip, deviceName,mask, changeToIP)) {
-			res =  Response.ok("change IP success").build();
+			res =  Response.ok("chang IP success").build();
 		} else {
-			res =  Response.ok("change IP failed").build();
+			res =  Response.ok("chang IP failed").build();
 		}
 		
 		return res;
@@ -234,9 +215,9 @@ public class OSBaseResource {
 		String[] affiMaskArr = (String[])affiMask.toArray(new String[affiMask.size()]);
 		String[] affiGatewayArr = (String[])affiGateway.toArray(new String[affiGateway.size()]);
 		if(ob.sendChangeAffiIPMsg(uid, ip, mac,  affiIPArr, affiMaskArr, affiGatewayArr)){
-			res =  Response.ok("change windows affi IP success").build();
+			res =  Response.ok("chang windows affi IP success").build();
 		} else {
-			res =  Response.ok("change windows affi IP failed").build();
+			res =  Response.ok("chang windows affi IP failed").build();
 		}
 		return res;
 	}
@@ -263,9 +244,9 @@ public class OSBaseResource {
 		OSBase ob = new OSBase();
 		
 		if(ob.sendChangeAffiIPOnLinuxMsg(uid, ip,deviceName, mask,changeToIP)){
-			res =  Response.ok("change linux affi IP success").build();
+			res =  Response.ok("chang linux affi IP success").build();
 		} else {
-			res =  Response.ok("change linux affi IP failed").build();
+			res =  Response.ok("chang linux affi IP failed").build();
 		}
 		
 		return res;
