@@ -86,6 +86,7 @@ public class OSBase {
 	public boolean sendChangePasswdMsg(String uid,String ip,String cUserName,String cPasswd){
 		//发送Socket消息给Agent
 		try {
+			System.out.println("ip*************************"+ip);
 			Socket socket = new Socket(ip, 9000);
 			String[] values=new String[2];
 			values[0]=cUserName;

@@ -26,7 +26,7 @@ public class BasicAuth {
 		try {
 			System.out.println(auth+" +++++++");
 			decodedBytes = new String(new BASE64Decoder().decodeBuffer(auth));
-			System.out.println(decodedBytes+"-----------");
+			System.out.println(decodedBytes+"--------");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

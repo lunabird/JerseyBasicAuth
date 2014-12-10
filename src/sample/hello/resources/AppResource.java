@@ -206,8 +206,7 @@ public class AppResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installZendGuardLoader(@QueryParam("uid") String uid,
 			@QueryParam("ip") String ip,
-			@QueryParam("phpPath") String phpPath,
-			@QueryParam("installPath") String installPath
+			@QueryParam("phpPath") String phpPath
 			) {
 		Response res = null;
 		ApplicationBase a = new ApplicationBase();
@@ -215,7 +214,7 @@ public class AppResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP(uid, ip,"zendguardloader");
-			if (a.sendSetupZendGuardLoaderMsg(uid, ip, scIPAddr, installPath,phpPath)) {
+			if (a.sendSetupZendGuardLoaderMsg(uid, ip, scIPAddr,phpPath)) {
 				res = Response.ok("install ZendGuardLoader request is already executing").build();
 			} else {
 				res = Response.ok("install ZendGuardLoader request failed").build();
@@ -460,7 +459,7 @@ public class AppResource {
 			@QueryParam("ip") String ip,
 			@QueryParam("hostname") String hostname,
 			@QueryParam("inventorypath") String inventorypath,
-			@QueryParam("installPath") String installPath,
+			@QueryParam("oraclebase") String oraclebase,
 			@QueryParam("oraclehome") String oraclehome,
 			@QueryParam("rootPswd") String rootPswd
 			) {
@@ -470,7 +469,7 @@ public class AppResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP(uid, ip,"oracle11g");
-			if (a.sendSetupOracle11gMsg(uid, ip, scIPAddr, hostname,inventorypath,installPath,oraclehome,rootPswd)) {
+			if (a.sendSetupOracle11gMsg(uid, ip, scIPAddr, hostname,inventorypath,oraclebase,oraclehome,rootPswd)) {
 				res = Response.ok("install Oracle11g request is already executing").build();
 			} else {
 				res = Response.ok("install Oracle11g request failed").build();

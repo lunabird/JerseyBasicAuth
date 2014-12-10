@@ -49,8 +49,8 @@ public class OSBaseResource {
 			@QueryParam("passwd") String passwd) {
 		Response res;
 		OSBase ob = new OSBase();
-//		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
-		if(true){
+		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
+//		if(true){
 			res =  Response.ok("chang passwd success").build();
 		} else {
 			res =  Response.ok("chang passwd failed").build();

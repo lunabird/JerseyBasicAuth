@@ -11,7 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
+
 import sample.DBOP.DBOperation;
+
+import com.sun.jersey.api.uri.UriBuilderImpl;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 
@@ -35,7 +38,7 @@ public class AuthFilter implements ContainerRequestFilter {
 //		}
 
 		//Get the authentification passed in HTTP headers parameters
-		String auth = containerRequest.getHeaderValue("authorization");
+		String auth = containerRequest.getHeaderValue("authentication");
 		
 		//If the user does not have the right (does not provide any HTTP Basic Auth)
 		if(auth == null){
@@ -79,25 +82,28 @@ public class AuthFilter implements ContainerRequestFilter {
 		
 		if(sql[0].equals(t[0])){
 				if((total2-total1)<=10){
-					System.out.println("不用重新登录");
+					System.out.println("Do not need authentication any more.");
 					//判断密码与随机数是否匹配
 					if(lap[1].equals(pwd)&&(lap[2].equals(random))){
-						System.out.println("containerRequest:"+containerRequest.getAbsolutePath());
-						containerRequest.setUris(containerRequest.getBaseUri(), containerRequest.getAbsolutePathBuilder().queryParam("uid",lap[0]).build());
+						System.out.println("original containerRequest:"+containerRequest.getRequestUri());
+						containerRequest.setUris(containerRequest.getBaseUri(), containerRequest.getRequestUriBuilder().queryParam("uid", lap[0]).build());
+						System.out.println("containerRequest append uid:"+containerRequest.getRequestUri());
 						return containerRequest;
+						//return null;
 			        }else{
 			        	System.out.println("401");
-			        	System.out.println("执行错误");
+			        	System.out.println("401 execution error");
 			        	return null;
 			        }
 				}else{
 					flag = true;
-					System.out.println("Token已过期，请重新登录");	
+					//Token已过期，请重新登录
+					System.out.println("Token has expired, please login again");	
 					return null;
 				}
 		}else{
 			flag = true;
-			System.out.println("Token已过期，请重新登录");
+			System.out.println("Token has expired, please login again");
 			return null;
 		}
 		

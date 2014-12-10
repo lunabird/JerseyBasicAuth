@@ -58,7 +58,7 @@ public class Client extends HttpServlet {
 		String urlStr = (String)request.getParameter("url");
 		String token = (String)request.getParameter("token");
 		String style = (String)request.getParameter("patten");
-		
+		System.out.println(urlStr+"-----------------"+token);
 		try{
 			
 	        // URL url = new URL ("http://ip:port/download_url");
@@ -66,7 +66,7 @@ public class Client extends HttpServlet {
 	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 	        connection.setRequestMethod(style);
 	        connection.setDoOutput(true);
-	        connection.setRequestProperty("authorization", "Basic "+ token);
+	        connection.setRequestProperty("authentication", "Basic "+ token);
 	
 	        connection.connect();
 	        // 获取所有响应头字段

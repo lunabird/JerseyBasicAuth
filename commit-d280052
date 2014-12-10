@@ -1,0 +1,232 @@
+commit d280052362a3a99c201773c23dec2003a6f9e70b
+Author: lunabird <xd_huangpeng@163.com>
+Date:   Tue Dec 9 17:04:39 2014 +0800
+
+    修改了vmscript的参数，将uid改成了@QueryParam。
+    使用jersey-client的api模拟发送HTTP请求。
+    用OSBase的change passwd 操作来实验了发送HTTP消息体里的raw json数据，
+    
+    Signed-off-by: lunabird <xd_huangpeng@163.com>
+
+diff --git a/WebRoot/WEB-INF/classes/sample/hello/client/OSBaseClient.class b/WebRoot/WEB-INF/classes/sample/hello/client/OSBaseClient.class
+index 986014d..dfb5304 100644
+Binary files a/WebRoot/WEB-INF/classes/sample/hello/client/OSBaseClient.class and b/WebRoot/WEB-INF/classes/sample/hello/client/OSBaseClient.class differ
+diff --git a/WebRoot/WEB-INF/classes/sample/hello/resources/OSBaseResource.class b/WebRoot/WEB-INF/classes/sample/hello/resources/OSBaseResource.class
+index 18dad74..5d6dda1 100644
+Binary files a/WebRoot/WEB-INF/classes/sample/hello/resources/OSBaseResource.class and b/WebRoot/WEB-INF/classes/sample/hello/resources/OSBaseResource.class differ
+diff --git a/WebRoot/WEB-INF/classes/sample/hello/resources/VMScriptResource.class b/WebRoot/WEB-INF/classes/sample/hello/resources/VMScriptResource.class
+index 3abc794..f74f35d 100644
+Binary files a/WebRoot/WEB-INF/classes/sample/hello/resources/VMScriptResource.class and b/WebRoot/WEB-INF/classes/sample/hello/resources/VMScriptResource.class differ
+diff --git a/src/sample/hello/client/OSBaseClient.java b/src/sample/hello/client/OSBaseClient.java
+index 008b491..6be9650 100644
+--- a/src/sample/hello/client/OSBaseClient.java
++++ b/src/sample/hello/client/OSBaseClient.java
+@@ -1,28 +1,71 @@
+ package sample.hello.client;
+ 
++import java.io.File;
+ import javax.ws.rs.core.MediaType;
+-
++import org.codehaus.jettison.json.JSONException;
++import org.codehaus.jettison.json.JSONObject;
+ import com.sun.jersey.api.client.Client;
++import com.sun.jersey.api.client.ClientResponse;
+ import com.sun.jersey.api.client.WebResource;
++import com.sun.jersey.multipart.FormDataMultiPart;
++import com.sun.jersey.multipart.file.FileDataBodyPart;
+ 
+ public class OSBaseClient {
+ 		
+ 	public static void main(String[] args){
+-		
+-		
+ 		Client c = Client.create();
+-		WebResource r = c.resource("http://localhost:8080/MyJersey/rest/");
+-		putChangePasswd(r);
++		WebResource r = c.resource("http://localhost:8080/JerseyBasicAuth/rest/");
++//		putChangePasswd(r);
++//		putChangePasswd_json(r);
++		postUpload(r);
+ 	}
+ 	
+ 	public static void putChangePasswd(WebResource r){
+-		String response = r.path("OSBase/chgPwd")
+-                .queryParam("uid", "hp0831")
++		String response = r.path("OSBase/vmSysPwd")
+                 .queryParam("ip", "192.168.0.202")
+                 .queryParam("userName", "Administrator")
+                 .queryParam("passwd", "5413")
++                .header("Authorization", "aHA6MTIzNDU2OjEz")
+                 .type(MediaType.APPLICATION_JSON)
+                 .put(String.class);
+ 		System.out.println(response);
+ 	}
++	public static void putChangePasswd_json(WebResource r){
++		JSONObject jo = new JSONObject();
++		try {
++			jo.put("ip", "192.168.0.202");
++			jo.put("userName", "Administrator");
++			jo.put("passwd", "5413");
++			String response = r.path("OSBase/vmSysPwd_json")
++					.entity(jo)
++	                .header("Authorization", "aHA6MTIzNDU2OjEz")
++	                .type(MediaType.APPLICATION_JSON)
++	                .put(String.class);
++			System.out.println(response);
++		} catch (JSONException e) {
++			// TODO Auto-generated catch block
++			e.printStackTrace();
++		}
++	}
++	
++	public static void postUpload(WebResource r){
++		final File fileToUpload = new File("E:/cloudhost.sql");
++		final FormDataMultiPart multiPart = new FormDataMultiPart();
++		String ip = "119.90.140.59";
++		if (fileToUpload != null) 
++		{
++			((FormDataMultiPart) multiPart.bodyPart(new FileDataBodyPart("upload", fileToUpload,
++					MediaType.APPLICATION_OCTET_STREAM_TYPE)))
++					.field("ip",ip, MediaType.TEXT_PLAIN_TYPE);
++		}
++		final ClientResponse clientResp = r.path("vmScript/upload")
++				.type(MediaType.MULTIPART_FORM_DATA_TYPE)
++				.header("Authorization", "aHA6MTIzNDU2OjQ3")
++				.post(ClientResponse.class,multiPart);
++		System.out.println("Response: " + clientResp.getClientResponseStatus()+"\n");
++	}
++	
++	
++	
++	
+ }
+diff --git a/src/sample/hello/resources/OSBaseResource.java b/src/sample/hello/resources/OSBaseResource.java
+index fa3e57f..257e431 100644
+--- a/src/sample/hello/resources/OSBaseResource.java
++++ b/src/sample/hello/resources/OSBaseResource.java
+@@ -49,14 +49,33 @@ public class OSBaseResource {
+ 			@QueryParam("passwd") String passwd) {
+ 		Response res;
+ 		OSBase ob = new OSBase();
+-//		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
+-		if(true){
+-			res =  Response.ok("chang passwd success").build();
++		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
++//		if(true){
++			res =  Response.ok("change passwd success").build();
+ 		} else {
+-			res =  Response.ok("chang passwd failed").build();
++			res =  Response.ok("change passwd failed").build();
+ 		}
+ 		return res;
+ 	}
++	@PUT
++	@Path("/vmSysPwd_json")
++	@Consumes(MediaType.APPLICATION_JSON)
++	@Produces(MediaType.APPLICATION_JSON)
++	public Response changePasswd_json(@QueryParam("uid") String uid,
++			String json) {
++		Response res;
++		try {
++			JSONObject o = new JSONObject(json);
++			System.out.println(o.get("ip"));
++			System.out.println(o.get("userName"));
++			System.out.println(o.get("passwd"));
++		} catch (JSONException e) {
++			// TODO Auto-generated catch block
++			e.printStackTrace();
++		}
++		res = Response.ok("change passwd success").build();
++		return res;
++	}
+ 	
+ 	@POST
+ 	@Path("/sysService")
+@@ -147,9 +166,9 @@ public class OSBaseResource {
+ 		OSBase ob = new OSBase();
+ 		String[] dnsArr = (String[])dns.toArray(new String[dns.size()]);
+ 		if (ob.sendChangeIPMsg(uid, ip, mac,changeToIP,mask, gateway,dnsArr)) {
+-			res =  Response.ok("chang IP success").build();
++			res =  Response.ok("change IP success").build();
+ 		} else {
+-			res =  Response.ok("chang IP failed").build();
++			res =  Response.ok("change IP failed").build();
+ 		}
+ 		
+ 		return res;
+@@ -180,9 +199,9 @@ public class OSBaseResource {
+ 		Response res;
+ 		OSBase ob = new OSBase();
+ 		if (ob.sendChangeIPOnLinuxMsg(uid, ip, deviceName,mask, changeToIP)) {
+-			res =  Response.ok("chang IP success").build();
++			res =  Response.ok("change IP success").build();
+ 		} else {
+-			res =  Response.ok("chang IP failed").build();
++			res =  Response.ok("change IP failed").build();
+ 		}
+ 		
+ 		return res;
+@@ -215,9 +234,9 @@ public class OSBaseResource {
+ 		String[] affiMaskArr = (String[])affiMask.toArray(new String[affiMask.size()]);
+ 		String[] affiGatewayArr = (String[])affiGateway.toArray(new String[affiGateway.size()]);
+ 		if(ob.sendChangeAffiIPMsg(uid, ip, mac,  affiIPArr, affiMaskArr, affiGatewayArr)){
+-			res =  Response.ok("chang windows affi IP success").build();
++			res =  Response.ok("change windows affi IP success").build();
+ 		} else {
+-			res =  Response.ok("chang windows affi IP failed").build();
++			res =  Response.ok("change windows affi IP failed").build();
+ 		}
+ 		return res;
+ 	}
+@@ -244,9 +263,9 @@ public class OSBaseResource {
+ 		OSBase ob = new OSBase();
+ 		
+ 		if(ob.sendChangeAffiIPOnLinuxMsg(uid, ip,deviceName, mask,changeToIP)){
+-			res =  Response.ok("chang linux affi IP success").build();
++			res =  Response.ok("change linux affi IP success").build();
+ 		} else {
+-			res =  Response.ok("chang linux affi IP failed").build();
++			res =  Response.ok("change linux affi IP failed").build();
+ 		}
+ 		
+ 		return res;
+diff --git a/src/sample/hello/resources/VMScriptResource.java b/src/sample/hello/resources/VMScriptResource.java
+index 5a03f9e..fa19798 100644
+--- a/src/sample/hello/resources/VMScriptResource.java
++++ b/src/sample/hello/resources/VMScriptResource.java
+@@ -9,6 +9,7 @@ import java.io.OutputStream;
+ import javax.ws.rs.Consumes;
+ import javax.ws.rs.POST;
+ import javax.ws.rs.Path;
++import javax.ws.rs.QueryParam;
+ import javax.ws.rs.core.MediaType;
+ import javax.ws.rs.core.Response;
+ import javax.ws.rs.core.Response.Status;
+@@ -26,10 +27,11 @@ public class VMScriptResource {
+ 	@POST
+ 	@Path("/upload")
+ 	@Consumes(MediaType.MULTIPART_FORM_DATA)
+-	public Response uploadFile(@FormDataParam("uid") String uid,
++	public Response uploadFile(@QueryParam("uid") String uid,
+ 			@FormDataParam("ip") String ip,
+ 			@FormDataParam("upload") InputStream is,
+ 			@FormDataParam("upload") FormDataContentDisposition formData) {
++		System.out.println("vm script ip:"+ip);
+ 		String fileLocation = "c:/" + formData.getFileName();
+ 		try {
+ 			File f = saveFile(is, fileLocation);
+@@ -37,11 +39,14 @@ public class VMScriptResource {
+ 					+ fileLocation;
+ 			VMScript vs = new VMScript();
+ 			if(vs.sendExeVmScriptMsg(uid, ip, f)){
++//			if(true){
+ 				if (f.isFile() && f.exists()) {   
+ 				    f.delete();   
+ 				}
++				System.out.println("the send script is already executing ");
+ 				return Response.ok("the send script is already executing ").build();
+ 			}
++			System.out.println("send script failed");
+ 			return Response.ok("send script failed").build();
+ 		} catch (IOException e) {
+ 			e.printStackTrace();

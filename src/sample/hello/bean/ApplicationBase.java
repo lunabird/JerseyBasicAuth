@@ -174,12 +174,12 @@ public class ApplicationBase {
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
-			String[] values = new String[4];
+			String[] values = new String[3];
 			values[0] = scIPAddr[0];
-			String temps = scIPAddr[1];
-			values[1] = temps.split(",")[0];
-			values[2] = temps.split(",")[1];
-			values[3] = pswd;
+//			String temps = scIPAddr[1];
+			values[1] = scIPAddr[1];
+			values[2] = pswd;
+//			values[3] = pswd;
 			Message msg = new Message(MsgType.setupMySql, uid,values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -372,7 +372,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupZendGuardLoaderMsg(String uid,String ip,String[] scIPAddr,String installPath,String phpPath){
+	public boolean sendSetupZendGuardLoaderMsg(String uid,String ip,String[] scIPAddr,String phpPath){
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -380,7 +380,6 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[3] = phpPath;
-			values[2] = installPath;
 			Message msg = new Message(MsgType.setupZendGuardLoader, uid,values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -868,7 +867,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public boolean sendSetupOracle11gMsg(String uid,String ip,String[] scIPAddr,String hostname,String inventorypath,
-			String installPath,String oraclehome, String rootPswd){
+			String oraclebase,String oraclehome, String rootPswd){
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -877,7 +876,7 @@ public class ApplicationBase {
 			values[1] = scIPAddr[1];
 			values[2] = hostname;
 			values[3] = inventorypath;
-			values[4] = installPath;
+			values[4] = oraclebase;
 			values[5] = oraclehome;
 			values[6] = rootPswd;
 			Message msg = new Message(MsgType.setupOracle11g, uid,values);
