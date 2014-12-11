@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -26,7 +27,7 @@ public class VMScriptResource {
 	@POST
 	@Path("/upload")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response uploadFile(@FormDataParam("uid") String uid,
+	public Response uploadFile(@QueryParam("uid") String uid,
 			@FormDataParam("ip") String ip,
 			@FormDataParam("upload") InputStream is,
 			@FormDataParam("upload") FormDataContentDisposition formData) {
