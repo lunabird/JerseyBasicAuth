@@ -15,9 +15,10 @@ public class DBConnManager {
 	private static String password = "123456";
 	
 	//数据库管理对象
-	private static DBConnManager dbcMananger = null; 
+	private DBConnManager dbcMananger = null; 
 	//数据库连接对象
-	private static Connection conn=null;
+//	private static Connection conn=null;
+	private Connection conn=null;
 	//数据库预编译对象
     private PreparedStatement ps=null;
 	//结果集
@@ -41,7 +42,7 @@ public class DBConnManager {
 	 * 获取数据库管理对象实例
 	 * @return
 	 */
-	 public static DBConnManager getInstance() {
+	 public  DBConnManager getInstance() {
 		if(dbcMananger == null) {
 			dbcMananger = new DBConnManager();
 		}
@@ -52,7 +53,7 @@ public class DBConnManager {
 	 * 获取数据库连接对象
 	 * @return
 	 */
-	public static Connection getConnection() {
+	public  Connection getConnection() {
 		return conn;
 	}
 	

@@ -14,7 +14,7 @@ public class DBOperation {
 	private Connection con = null;
 	
 	public DBOperation() {
-		dbcManager = DBConnManager.getInstance();
+		dbcManager = (new DBConnManager()).getInstance();
 		con = dbcManager.getConnection();
 		if (con == null) {
             System.out.println("Can't get connection");
@@ -22,7 +22,7 @@ public class DBOperation {
         }
 	}
 	/**
-	 *  修改IP后更新数据库
+	 * 修改IP后更新数据库
 	 * @param oldIP
 	 * @param changeToIP
 	 * @throws SQLException 
