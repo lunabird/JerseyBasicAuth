@@ -413,6 +413,55 @@ public class ApplicationBase {
 		return false;
 	}
 	/**
+	 * 安装ZendGuardLoader Linux
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param installPath
+	 * @return
+	 */
+	public boolean sendSetupZendGuardLoaderMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath,String phpPath){
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[4];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = installPath;
+			values[3] = phpPath;
+			Message msg = new Message(MsgType.setupZendGuardLoader, uid,values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+            String str = MD5Util.convertMD5(datatemp);
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (String)ois.readObject();
+			//解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message)SerializeUtil.deserialize(str2); 
+			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
+				String ret = (String)msg.getValues();
+				if(ret.equals("success")||ret.equals("executing")){
+					return true;
+				}
+				System.out.println(ret);
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	/**
 	 * 安装Python
 	 * @param uid
 	 * @param ip
@@ -460,6 +509,54 @@ public class ApplicationBase {
 		return false;
 	}
 	/**
+	 * 安装Python Linux
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param installPath
+	 * @return
+	 */
+	public boolean sendSetupPythonMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[3];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = installPath;
+			Message msg = new Message(MsgType.setupPython, uid,values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+            String str = MD5Util.convertMD5(datatemp);
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (String)ois.readObject();
+			//解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message)SerializeUtil.deserialize(str2); 
+			if (msg.getType().equals(MsgType.setupPython)) {
+				String ret = (String)msg.getValues();
+				if(ret.equals("success")||ret.equals("executing")){
+					return true;
+				}
+				System.out.println(ret);
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	/**
 	 * 安装Memcached
 	 * @param uid
 	 * @param ip
@@ -471,15 +568,58 @@ public class ApplicationBase {
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[2];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			
+			Message msg = new Message(MsgType.setupMemcached, uid,values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+            String str = MD5Util.convertMD5(datatemp);
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (String)ois.readObject();
+			//解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message)SerializeUtil.deserialize(str2); 
+			if (msg.getType().equals(MsgType.setupMemcached)) {
+				String ret = (String)msg.getValues();
+				if(ret.equals("success")||ret.equals("executing")){
+					return true;
+				}
+				System.out.println(ret);
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	/**
+	 * 安装Memcached Linux
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param installPath
+	 * @return
+	 */
+	public boolean sendSetupMemcachedMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
 			String[] values = new String[3];
 			values[0] = scIPAddr[0];
-			String temps = scIPAddr[1];
-			if(temps.contains(",")){
-				values[1] = temps.split(",")[0];
-				values[2] = temps.split(",")[1];
-			}else{
-				values[1] = scIPAddr[1];
-			}
+			values[1] = scIPAddr[1];
+			values[2] = installPath;
 			Message msg = new Message(MsgType.setupMemcached, uid,values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -625,6 +765,53 @@ public class ApplicationBase {
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
 			Message msg = new Message(MsgType.setupFTP, uid,values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+            String str = MD5Util.convertMD5(datatemp);
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (String)ois.readObject();
+			//解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message)SerializeUtil.deserialize(str2); 
+			if (msg.getType().equals(MsgType.setupFTP)) {
+				String ret = (String)msg.getValues();
+				if(ret.equals("success")||ret.equals("executing")){
+					return true;
+				}
+				System.out.println(ret);
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	/**
+	 * 安装FTP Linux
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param installPath
+	 * @return
+	 */
+	public boolean sendSetupFTPMsgOnLinux(String uid,String ip,String[] scIPAddr){
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+//			String[] values = new String[3];
+//			values[0] = scIPAddr[0];
+//			values[1] = scIPAddr[1];
+			Message msg = new Message(MsgType.setupFTP, uid,null);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
             String str = MD5Util.convertMD5(datatemp);

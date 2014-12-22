@@ -96,33 +96,33 @@ public class AppResource {
 		}
 		return res;
 	}
-	@POST
-	@Path("/Tomcat_Limux")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response installTomcatOnLinux(@QueryParam("uid") String uid, 
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath,
-			@QueryParam("jdkName") String jdkName,
-			@QueryParam("jdkPath") String jdkPath
-			) {
-		Response res = null;
-		ApplicationBase a = new ApplicationBase();
-		DBOperation dbop = new DBOperation();
-		String[] scIPAddr= new String[2];
-		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"tomcat");
-			if (a.sendSetupTomcatOnLinuxMsg(uid, ip, scIPAddr, installPath,jdkName,jdkPath)) {
-				res = Response.ok("install tomcat request is already executing").build();
-			} else {
-				res = Response.ok("install tomcat request failed").build();
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return res;
-	}
+//	@POST
+//	@Path("/Tomcat_Linux")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public Response installTomcatOnLinux(@QueryParam("uid") String uid, 
+//			@QueryParam("ip") String ip,
+//			@QueryParam("installPath") String installPath,
+//			@QueryParam("jdkName") String jdkName,
+//			@QueryParam("jdkPath") String jdkPath
+//			) {
+//		Response res = null;
+//		ApplicationBase a = new ApplicationBase();
+//		DBOperation dbop = new DBOperation();
+//		String[] scIPAddr= new String[2];
+//		try {
+//			scIPAddr = dbop.getRCAddrByIP(uid, ip,"tomcat");
+//			if (a.sendSetupTomcatOnLinuxMsg(uid, ip, scIPAddr, installPath,jdkName,jdkPath)) {
+//				res = Response.ok("install tomcat request is already executing").build();
+//			} else {
+//				res = Response.ok("install tomcat request failed").build();
+//			}
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return res;
+//	}
 	@POST
 	@Path("/Jdk")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -226,6 +226,32 @@ public class AppResource {
 		return res;
 	}
 	@POST
+	@Path("/ZendGuardLoader_Linux")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response installZendGuardLoader_Linux(@QueryParam("uid") String uid,
+			@QueryParam("ip") String ip,
+			@QueryParam("installPath") String installPath,
+			@QueryParam("phpPath") String phpPath
+			) {
+		Response res = null;
+		ApplicationBase a = new ApplicationBase();
+		DBOperation dbop = new DBOperation();
+		String[] scIPAddr= new String[2];
+		try {
+			scIPAddr = dbop.getRCAddrByIP(uid, ip,"zendguardloader");
+			if (a.sendSetupZendGuardLoaderMsgOnLinux(uid, ip, scIPAddr,installPath,phpPath)) {
+				res = Response.ok("install ZendGuardLoader request is already executing").build();
+			} else {
+				res = Response.ok("install ZendGuardLoader request failed").build();
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	@POST
 	@Path("/Python")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -250,6 +276,31 @@ public class AppResource {
 		return res;
 	}
 	@POST
+	@Path("/Python_Linux")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response installPython(@QueryParam("uid") String uid,
+			@QueryParam("ip") String ip,
+			@QueryParam("installPath") String installPath
+			) {
+		Response res = null;
+		ApplicationBase a = new ApplicationBase();
+		DBOperation dbop = new DBOperation();
+		String[] scIPAddr= new String[2];
+		try {
+			scIPAddr = dbop.getRCAddrByIP(uid, ip,"python");
+			if (a.sendSetupPythonMsgOnLinux(uid, ip, scIPAddr,installPath)) {
+				res = Response.ok("install Python request is already executing").build();
+			} else {
+				res = Response.ok("install Python request failed").build();
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	@POST
 	@Path("/Memcached")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -263,6 +314,31 @@ public class AppResource {
 		try {
 			scIPAddr = dbop.getRCAddrByIP(uid, ip,"memcached");
 			if (a.sendSetupMemcachedMsg(uid, ip, scIPAddr)) {
+				res = Response.ok("install Memcached request is already executing").build();
+			} else {
+				res = Response.ok("install Memcached request failed").build();
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	@POST
+	@Path("/Memcached_Linux")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response installMemcached(@QueryParam("uid") String uid,
+			@QueryParam("ip") String ip,
+			@QueryParam("installPath") String installPath
+			) {
+		Response res = null;
+		ApplicationBase a = new ApplicationBase();
+		DBOperation dbop = new DBOperation();
+		String[] scIPAddr= new String[2];
+		try {
+			scIPAddr = dbop.getRCAddrByIP(uid, ip,"memcached");
+			if (a.sendSetupMemcachedMsgOnLinux(uid, ip, scIPAddr,installPath)) {
 				res = Response.ok("install Memcached request is already executing").build();
 			} else {
 				res = Response.ok("install Memcached request failed").build();
@@ -338,6 +414,30 @@ public class AppResource {
 		try {
 			scIPAddr = dbop.getRCAddrByIP(uid, ip,"ftp");
 			if (a.sendSetupFTPMsg(uid, ip, scIPAddr, installPath)) {
+				res = Response.ok("install FTP request is already executing").build();
+			} else {
+				res = Response.ok("install FTP request failed").build();
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	@POST
+	@Path("/FTP_Linux")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response installFTP(@QueryParam("uid") String uid,
+			@QueryParam("ip") String ip
+			) {
+		Response res = null;
+		ApplicationBase a = new ApplicationBase();
+		DBOperation dbop = new DBOperation();
+		String[] scIPAddr= new String[2];
+		try {
+			scIPAddr = dbop.getRCAddrByIP(uid, ip,"ftp");
+			if (a.sendSetupFTPMsgOnLinux(uid, ip, scIPAddr)) {
 				res = Response.ok("install FTP request is already executing").build();
 			} else {
 				res = Response.ok("install FTP request failed").build();

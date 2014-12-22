@@ -93,18 +93,19 @@ public class AuthFilter implements ContainerRequestFilter {
 			        }else{
 			        	System.out.println("401");
 			        	System.out.println("401 execution error");
-			        	return null;
+			        	throw new WebApplicationException(Status.UNAUTHORIZED);
 			        }
 				}else{
 					flag = true;
 					//Token已过期，请重新登录
 					System.out.println("Token has expired, please login again");	
-					return null;
+					throw new WebApplicationException(Status.UNAUTHORIZED);
 				}
 		}else{
 			flag = true;
 			System.out.println("Token has expired, please login again");
-			return null;
+			throw new WebApplicationException(Status.UNAUTHORIZED);
+//			return null;
 		}
 		
 
