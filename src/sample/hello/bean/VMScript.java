@@ -8,6 +8,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
+
+import sample.DBOP.DBOperation;
 
 import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
@@ -15,11 +18,26 @@ import edu.xidian.message.Message;
 import edu.xidian.message.MsgType;
 
 public class VMScript {
-
-	public boolean sendExeVmScriptMsg(String uid, String ip, File file) {
+	/**
+	 * 将虚拟机脚本执行事件插入到数据库中
+	 * @param hostIp
+	 */
+	public int insertEvent(String hostIp){
+		int opID = -1;
+		DBOperation dbop = new DBOperation();
+		try {
+			opID = dbop.insertOperation(hostIp,"executeVMScript");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	
+	public int sendExeVmScriptMsg(String uid, String ip, File file) {
+		int opID = insertEvent(ip);
 		try {
 			Socket socket = new Socket(ip, 9400);
-
 			Message msg = new Message(MsgType.executeVMScript, uid,
 					file.getName());
 			// 加密
@@ -71,9 +89,9 @@ public class VMScript {
 			if (msg.getType().equals(MsgType.executeVMScript)) {
 				String ret = (String) msg.getValues();
 				if (ret.equals("success") || ret.equals("executing")) {
-					return true;
+					return opID;
 				}
-				System.out.println(ret);
+				System.out.println("executeVMScript opID:"+ret);
 			}
 			socket.close();
 
@@ -85,6 +103,6 @@ public class VMScript {
 			e.printStackTrace();
 		}
 
-		return false;
+		return opID;
 	}
 }

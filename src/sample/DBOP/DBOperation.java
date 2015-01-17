@@ -1,12 +1,23 @@
 package sample.DBOP;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import edu.xidian.enc.MD5Util;
+import edu.xidian.enc.SerializeUtil;
+import edu.xidian.message.Message;
+import edu.xidian.message.MsgType;
 
 public class DBOperation {
 
@@ -21,8 +32,8 @@ public class DBOperation {
             return;
         }
 	}
-	/**
-	 * 修改IP后更新数据库
+	/**@author hp
+	 * 修改IP后更新数据库,用于基础环境配置OSBase的修改IP操作
 	 * @param oldIP
 	 * @param changeToIP
 	 * @throws SQLException 
@@ -46,6 +57,328 @@ public class DBOperation {
 		}
 		return flag;
 	}
+	/**
+	 * 插入新的操作请求到数据库，先插一条操作信息到op表，再在opinfo表里自动插入一条开始执行的记录。
+	 * 基础环境配置，2步
+	 * 安装，5步
+	 * 卸载，脚本执行，3步
+	 * 更新，7步
+	 * 但是它们的第一步都是“开始执行”-->因为要支持各种不同的操作系统，所以数据库里面用英文存储
+	 * @param hostIP 执行命令的虚拟机IP
+	 * @param opName 操作名，可以是MsgType里面的枚举名字
+	 * @return opID 操作ID
+	 * @throws SQLException
+	 */
+	public int insertOperation(String hostIP,String opName) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		ResultSet rs = null;
+		//插入op表
+		String sql = "INSERT INTO op (hostIP,opName) VALUES ('"+hostIP+"','"+opName+"')";
+		stmt.executeUpdate(sql);
+		//获取opID
+		String sql1 = "select opID from op order by opID DESC limit 1";
+		rs = stmt.executeQuery(sql1);
+		int opID = -1;
+		if(rs.next()){
+			opID = rs.getInt(1);
+		}
+		//计算时间
+		java.util.Date date=new java.util.Date();
+		Timestamp time=new Timestamp(date.getTime());
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//插入opinfo表
+		String sql2 = "INSERT INTO opinfo (opID,status,time) VALUES ("+opID+",'start executing','"+df.format(time)+"')";
+		stmt.executeUpdate(sql2);	
+		//释放资源
+		dbcManager.close();
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+				rs.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return opID;
+	}
+	/**
+	 * 在opinfo表里更新操作状态信息。后台线程TCPServer一直在监听Agent，如果该操作状态发生了迁移，就在opinfo表里面增加一条记录。
+	 * @param opID
+	 * @param status
+	 * @return 
+	 * @throws SQLException
+	 */
+	public boolean updateOpStatus(int opID,String status) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		// 插入新纪录到opinfo表
+		// 计算时间
+		java.util.Date date = new java.util.Date();
+		Timestamp time = new Timestamp(date.getTime());
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String sql = "INSERT INTO opinfo (opID,status,time) VALUES (" + opID+ ",'" + status + "','" + df.format(time) + "')";
+		boolean flag = stmt.execute(sql);
+		//释放资源
+		dbcManager.close();
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return flag;
+	}
+	/**
+	 * 获取操作执行的当前状态
+	 * @param opID
+	 * @return
+	 * @throws SQLException
+	 */
+	public String getOpStatus(int opID) throws SQLException{
+		Statement stmt = null;
+		ResultSet rs = null;
+		stmt = con.createStatement();
+		String status = null;
+		//查询opinfo表,获取最新的一条记录
+		String sql = "SELECT status FROM opinfo WHERE opID="+opID+" ORDER BY time DESC LIMIT 1";
+		System.out.println(sql);
+		rs = stmt.executeQuery(sql);
+		if(rs.next()){
+			status = rs.getString(1);
+		}
+		
+		//获得安装包名字
+		//**************************************************************//
+		//首先查询op表，获得hostIp和opName，得到该软件名
+		String sql3 = "SELECT hostIp,opName FROM op WHERE opID="+opID;
+		rs = stmt.executeQuery(sql3);
+		String hostIp = null;
+		String sName = null;//软件名字
+		if(rs.next()){
+			hostIp = rs.getString("hostIp");
+			sName = rs.getString("opName").substring(5);
+		}
+		//再根据软件名字查rcinfo表，获取该软件对应的安装包名spName
+		String[] temp = getRCAddrByIP("hp", hostIp, sName);
+		String spName = temp[1];
+		//**************************************************************//
+			
+		
+		//如果status是“正在下载”，则要向Agent询问下载进度
+		if(status.contains("downloading")){			
+			//将spName发送给Agent,得到当前已经下载的大小
+			int alreadyDown = sendGetDownloadProgressMsg(opID,hostIp,spName);
+			//计算下载进度的百分比
+			//先查该安装包的大小
+			String q1 = "SELECT softSize FROM rcinfo WHERE softPath = '"+spName+"'";
+			rs = stmt.executeQuery(q1);
+			int softTotalSize = -1;
+			if(rs.next()){
+				softTotalSize = Integer.parseInt(rs.getString(1));
+			}
+			//算一下除法 alreadyDown/softTotalSize 注意单位要统一，都是KB
+			float progress = (float)alreadyDown/softTotalSize;
+			status = status+","+progress;
+		} else if(status.contains("installing")){//如果status是“正在安装”，则要自己计算安装进度
+			//首先查opinfo表，得到“下载完成的时间”
+			String q2 = "SELECT time FROM opinfo WHERE opID="+opID+" AND status = 'download completed'";
+			rs = stmt.executeQuery(q2);
+			Timestamp startTime = null;
+			if(rs.next()){
+				startTime = rs.getTimestamp("time"); 
+			}
+			System.out.println("*************************startTime:"+startTime+","+startTime.getTime());
+			//再从数据表rcinfo表中获得softTime,即软件安装的经验安装时间
+			String q3 = "SELECT softTime FROM rcinfo WHERE softPath='"+spName+"'";
+			rs = stmt.executeQuery(q3);
+			int totalInstallTime = -1;
+			if(rs.next()){
+				totalInstallTime = rs.getInt(1);
+			}
+			//计算安装进度，做一下除法 (now-startTime)/totalInstallTime
+			java.util.Date date = new java.util.Date();
+			Long now = date.getTime();	
+			System.out.println("*************************now:"+now);
+			Long startT = startTime.getTime();
+			float progress =  (now-startT)/(float)(totalInstallTime*1000);
+			status = status+","+progress;
+		}
+		//释放资源
+		dbcManager.close();
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+				rs.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		System.out.println("*************************get status:"+status);
+		return status;
+	}
+	/**
+	 * 向agent发送消息，获取下载软件的进度，返回已经下载的软件的大小，单位是kb
+	 * @param opID
+	 * @param ip
+	 * @param spName
+	 * @return
+	 */
+	public int sendGetDownloadProgressMsg(int opID,String ip, String spName) {
+		int alreadyDown = -1;
+		// 发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9500);
+			String values = spName;
+			Message msg = new Message(MsgType.getDownloadStatus, opID+"", values);
+			// 加密
+			String datatemp = SerializeUtil.serialize(msg);
+			String str = MD5Util.convertMD5(datatemp);
+			// 传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			// 获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (String) ois.readObject();
+			// 解密
+			String str2 = MD5Util.convertMD5(str);
+			msg = (Message) SerializeUtil.deserialize(str2);
+			if (msg.getType().equals(MsgType.getDownloadStatus)) {
+				String ret = (String) msg.getValues();
+				System.out.println(ret);
+				alreadyDown = Integer.parseInt(ret);
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return alreadyDown;
+	}
+	
+	
+	
+	
+	
+//	/**@author hp
+//	 * 根据事件id修改其对应的事件状态
+//	 * @param eid 事件id
+//	 * @param status 事件状态
+//	 * @return 修改结果成功或失败
+//	 * @throws SQLException
+//	 */
+//	public boolean updateEventStatus(int eid,String status) throws SQLException{
+//		Statement stmt = null;
+//		stmt = con.createStatement();
+//		boolean flag = false;
+//		if(status.contains("%")){//表示事件正在运行中，没有终止
+//			String sql = "UPDATE  event  SET status ='"+status+"' WHERE eventid="+eid+"";
+//			flag = stmt.execute(sql);
+//		}else{//不包含“%”，表示事件已经终止,要记录结束时间
+//			java.util.Date date=new java.util.Date();
+//			Timestamp stoptime=new Timestamp(date.getTime());
+//			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//			String sql = "UPDATE  event  SET status ='"+status+"', stoptime='"+df.format(stoptime)+"' WHERE eventid="+eid+"";
+//			System.out.println(sql);
+//			flag = stmt.execute(sql);
+//		}
+//		//释放资源
+//		dbcManager.close();
+//		if(stmt!=null)
+//		{
+//			try{
+//				stmt.close();
+//			}catch(Exception e)
+//			{
+//				e.printStackTrace();
+//			}
+//		}
+//		return flag;
+//	}
+//	/**
+//	 * 将event事件记录插入数据库表
+//	 * @param destIp
+//	 * @param description
+//	 * @return
+//	 * @throws SQLException
+//	 */
+//	public int insertIntoEventTable(String destIp,String description) throws SQLException{
+//		Statement stmt = null;
+//		stmt = con.createStatement();
+//		ResultSet rs = null;
+//		int eid = -1;
+//		java.util.Date date=new java.util.Date();
+//		Timestamp starttime=new Timestamp(date.getTime());
+//		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//		String sql = "INSERT INTO event (destip,progress,description,starttime) VALUES ('"+destIp+"','0%','"+description+"','"+df.format(starttime)+"')";
+//		int flag = stmt.executeUpdate(sql);
+//		if(flag>0){
+//			String sql1 ="SELECT eventid FROM event WHERE starttime='"+df.format(starttime)+"'";
+//			rs = stmt.executeQuery(sql1);
+//			if(rs.next()) {
+//				System.out.println("eid:" + rs.getString(1));
+//				eid = Integer.parseInt(rs.getString(1));
+//			}
+//		}
+//		//释放资源
+//		dbcManager.close();
+//		if(stmt!=null)
+//		{
+//			try{
+//				stmt.close();
+//			}catch(Exception e)
+//			{
+//				e.printStackTrace();
+//			}
+//		}
+//		return eid;
+//	}
+//
+//
+//	
+//	/**
+//	 * 根据eid查询事件运行的状态
+//	 * @param eid
+//	 * @throws SQLException 
+//	 */
+//	public String queryEventStatus(int eid) throws SQLException{
+//		Statement stmt = null;
+//		stmt = con.createStatement();
+//		ResultSet rs = null;
+//		String progress = null;
+//		//获得该用户可操作的所有主机
+//		String sql = "SELECT progress FROM event WHERE eventid="+eid;
+//		rs = stmt.executeQuery(sql);
+//		if(rs.next()){
+//			System.out.println(rs.getString(1));
+//			progress = rs.getString(1);
+//		}
+//		//释放资源
+//		dbcManager.close();
+//		if(stmt!=null)
+//		{
+//			try{
+//				stmt.close();
+//			}catch(Exception e)
+//			{
+//				e.printStackTrace();
+//			}
+//		}
+//		return progress;
+//	}
+	
 	/**@author XQ
 	 * 根据用户ID查询数据库获得该用户可以操作的主机及其所对应的软件中心地址列表
 	 * @param userID 用户ID
@@ -403,8 +736,17 @@ public class DBOperation {
 //		e.printStackTrace();
 //		}	
 //		
+//		try {
+//			dbop.updateHostIP("192.168.0.555", "192.168.0.122");
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
 		try {
-			dbop.updateHostIP("192.168.0.555", "192.168.0.122");
+//			dbop.insertOperation("192.168.0.555", "setupOracle");
+//			dbop.updateOpStatus(3, "installing");
+			dbop.getOpStatus(3);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

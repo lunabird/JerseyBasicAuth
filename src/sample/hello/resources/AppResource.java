@@ -1,9 +1,9 @@
 package sample.hello.resources;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -11,18 +11,21 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
 import sample.DBOP.DBOperation;
 import sample.hello.bean.ApplicationBase;
 
 @Path("/AppInstallation")
 public class AppResource {
-	
 	@POST
 	@Path("/MySql")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installMySql(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath,
 			@QueryParam("rootPswd") String rootPswd
 			) {
@@ -30,15 +33,33 @@ public class AppResource {
 		ApplicationBase a = new ApplicationBase();
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
-		
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"mysql");
-			if (a.sendSetupMySqlMsg(uid, ip, scIPAddr, installPath,rootPswd)) {
-				res = Response.ok("install mysql request is already executing").build();
-			} else {
-				res = Response.ok("install mysql request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();//表示要给用户返回的json对象
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "mysql");
+				// 将消息发送给Agent成功以后，返回一个代表操作id的代号opID，同时这也是数据库中存储的代表该操作的opID
+				int opID = a.sendSetupMySqlMsg(uid, ip.get(0), scIPAddr,installPath, rootPswd);
+				// 构造要返回给用户的json对象
+				entity.put("opID", opID);
+				entity.put("status","install mysql has already been executing ");//
+				res = Response.ok(entity).build();
+			}else if(ip.size()>1){
+				JSONArray jarr = new JSONArray();
+				for(int i=0;i<ip.size();i++){
+					JSONObject entity = new JSONObject();//表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "mysql");
+					int opID = a.sendSetupMySqlMsg(uid, ip.get(i), scIPAddr,installPath, rootPswd);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install mysql has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -49,22 +70,38 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installMySqlOnLinux(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("rootPswd") String rootPswd
 			) {
 		Response res = null;
 		ApplicationBase a = new ApplicationBase();
 		DBOperation dbop = new DBOperation();
-		String[] scIPAddr= new String[2];
-		
+		String[] scIPAddr = new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"mysql");
-			if (a.sendSetupMySqlOnLinuxMsg(uid, ip, scIPAddr, rootPswd)) {
-				res = Response.ok("install mysql request is already executing").build();
-			} else {
-				res = Response.ok("install mysql request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "mysql");
+				int opID = a.sendSetupMySqlOnLinuxMsg(uid, ip.get(0), scIPAddr,rootPswd);
+				entity.put("opID", opID);
+				entity.put("status","install mysql has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "mysql");
+					int opID = a.sendSetupMySqlOnLinuxMsg(uid, ip.get(i), scIPAddr,rootPswd);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install mysql has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -75,7 +112,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installTomcat(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath,
 			@QueryParam("jdkPath") String jdkPath
 			) {
@@ -84,13 +121,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"tomcat");
-			if (a.sendSetupTomcatMsg(uid, ip, scIPAddr, installPath,jdkPath)) {
-				res = Response.ok("install tomcat request is already executing").build();
-			} else {
-				res = Response.ok("install tomcat request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "tomcat");
+				int opID = a.sendSetupTomcatMsg(uid, ip.get(0), scIPAddr,installPath, jdkPath);
+				entity.put("opID", opID);
+				entity.put("status","install tomcat has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "tomcat");
+					int opID = a.sendSetupTomcatMsg(uid, ip.get(i), scIPAddr,installPath, jdkPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install tomcat has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -112,10 +166,10 @@ public class AppResource {
 //		String[] scIPAddr= new String[2];
 //		try {
 //			scIPAddr = dbop.getRCAddrByIP(uid, ip,"tomcat");
-//			if (a.sendSetupTomcatOnLinuxMsg(uid, ip, scIPAddr, installPath,jdkName,jdkPath)) {
-//				res = Response.ok("install tomcat request is already executing").build();
+//			int opID = a.sendSetupTomcatOnLinuxMsg(uid, ip, scIPAddr, installPath,jdkName,jdkPath)) {
+//				entity.put("opID", value);entity.put("status", value);res = Response.ok("install tomcat request is already executing").build();
 //			} else {
-//				res = Response.ok("install tomcat request failed").build();
+//				entity.put("opID", value);entity.put("status", value);res = Response.ok("install tomcat request failed").build();
 //			}
 //		} catch (SQLException e) {
 //			// TODO Auto-generated catch block
@@ -128,7 +182,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installJdk(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -136,13 +190,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"jdk");
-			if (a.sendSetupJdkMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install jdk request is already executing").build();
-			} else {
-				res = Response.ok("install jdk request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "jdk");
+				int opID = a.sendSetupJdkMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status", "install jdk has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "jdk");
+					int opID = a.sendSetupJdkMsg(uid, ip.get(i), scIPAddr,installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install jdk has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -153,7 +224,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installApache(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -161,13 +232,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"apache");
-			if (a.sendSetupApacheMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install Apache request is already executing").build();
-			} else {
-				res = Response.ok("install Apache request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "apache");
+				int opID = a.sendSetupApacheMsg(uid, ip.get(0), scIPAddr, installPath);
+				entity.put("opID", opID);
+				entity.put("status","install Apache has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "apache");
+					int opID = a.sendSetupApacheMsg(uid, ip.get(i), scIPAddr, installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install Apache has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -179,7 +267,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installNginx(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -187,13 +275,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"nginx");
-			if (a.sendSetupNginxMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install Nginx request is already executing").build();
-			} else {
-				res = Response.ok("install Nginx request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "nginx");
+				int opID = a.sendSetupNginxMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status","install Nginx has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "nginx");
+					int opID = a.sendSetupNginxMsg(uid, ip.get(i), scIPAddr,installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install Nginx has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -205,7 +310,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installZendGuardLoader(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("phpPath") String phpPath
 			) {
 		Response res = null;
@@ -213,13 +318,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"zendguardloader");
-			if (a.sendSetupZendGuardLoaderMsg(uid, ip, scIPAddr,phpPath)) {
-				res = Response.ok("install ZendGuardLoader request is already executing").build();
-			} else {
-				res = Response.ok("install ZendGuardLoader request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "zendguardloader");
+				int opID = a.sendSetupZendGuardLoaderMsg(uid, ip.get(0),scIPAddr, phpPath);
+				entity.put("opID", opID);
+				entity.put("status","install ZendGuardLoader has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i),"zendguardloader");
+					int opID = a.sendSetupZendGuardLoaderMsg(uid, ip.get(i),scIPAddr, phpPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install ZendGuardLoader has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -230,7 +352,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installZendGuardLoader_Linux(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath,
 			@QueryParam("phpPath") String phpPath
 			) {
@@ -239,13 +361,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"zendguardloader");
-			if (a.sendSetupZendGuardLoaderMsgOnLinux(uid, ip, scIPAddr,installPath,phpPath)) {
-				res = Response.ok("install ZendGuardLoader request is already executing").build();
-			} else {
-				res = Response.ok("install ZendGuardLoader request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "zendguardloader");
+				int opID = a.sendSetupZendGuardLoaderMsgOnLinux(uid, ip.get(0),scIPAddr, installPath, phpPath);
+				entity.put("opID", opID);
+				entity.put("status","install ZendGuardLoader has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i),"zendguardloader");
+					int opID = a.sendSetupZendGuardLoaderMsgOnLinux(uid,ip.get(i), scIPAddr, installPath, phpPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install ZendGuardLoader has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -256,20 +395,37 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installPython(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip
+			@QueryParam("ip") List<String> ip
 			) {
 		Response res = null;
 		ApplicationBase a = new ApplicationBase();
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"python");
-			if (a.sendSetupPythonMsg(uid, ip, scIPAddr)) {
-				res = Response.ok("install Python request is already executing").build();
-			} else {
-				res = Response.ok("install Python request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "python");
+				int opID = a.sendSetupPythonMsg(uid, ip.get(0), scIPAddr);
+				entity.put("opID", opID);
+				entity.put("status","install python has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i),"python");
+					int opID = a.sendSetupPythonMsg(uid, ip.get(i), scIPAddr);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install python has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -280,7 +436,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installPython(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -288,13 +444,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"python");
-			if (a.sendSetupPythonMsgOnLinux(uid, ip, scIPAddr,installPath)) {
-				res = Response.ok("install Python request is already executing").build();
-			} else {
-				res = Response.ok("install Python request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "python");
+				int opID = a.sendSetupPythonMsgOnLinux(uid, ip.get(0),scIPAddr, installPath);
+				entity.put("opID", opID);
+				entity.put("status","install python has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "python");
+					int opID = a.sendSetupPythonMsgOnLinux(uid, ip.get(i),scIPAddr, installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install python has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -305,20 +478,37 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installMemcached(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip
+			@QueryParam("ip") List<String>  ip
 			) {
 		Response res = null;
 		ApplicationBase a = new ApplicationBase();
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"memcached");
-			if (a.sendSetupMemcachedMsg(uid, ip, scIPAddr)) {
-				res = Response.ok("install Memcached request is already executing").build();
-			} else {
-				res = Response.ok("install Memcached request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "memcached");
+				int opID = a.sendSetupMemcachedMsg(uid, ip.get(0), scIPAddr);
+				entity.put("opID", opID);
+				entity.put("status","install memcached has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "memcached");
+					int opID = a.sendSetupMemcachedMsg(uid, ip.get(i), scIPAddr);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install memcached has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -329,7 +519,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installMemcached(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -337,13 +527,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"memcached");
-			if (a.sendSetupMemcachedMsgOnLinux(uid, ip, scIPAddr,installPath)) {
-				res = Response.ok("install Memcached request is already executing").build();
-			} else {
-				res = Response.ok("install Memcached request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "memcached");
+				int opID = a.sendSetupMemcachedMsgOnLinux(uid, ip.get(0),scIPAddr, installPath);
+				entity.put("opID", opID);
+				entity.put("status","install memcached has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "memcached");
+					int opID = a.sendSetupMemcachedMsgOnLinux(uid, ip.get(i),scIPAddr, installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install memcached has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block0
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -354,7 +561,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installIISRewrite(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -362,13 +569,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"iisrewrite");
-			if (a.sendSetupIISRewriteMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install IISRewrite request is already executing").build();
-			} else {
-				res = Response.ok("install IISRewrite request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "iisrewrite");
+				int opID = a.sendSetupIISRewriteMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status","install IISRewrite has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "iisrewrite");
+					int opID = a.sendSetupIISRewriteMsg(uid, ip.get(i),scIPAddr, installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install IISRewrite has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -379,7 +603,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installASP(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -387,13 +611,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"asp");
-			if (a.sendSetupASPMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install ASP request is already executing").build();
-			} else {
-				res = Response.ok("install ASP request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "asp");
+				int opID = a.sendSetupASPMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status", "install ASP has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "asp");
+					int opID = a.sendSetupASPMsg(uid, ip.get(i), scIPAddr,installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install ASP has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -404,7 +645,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installFTP(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -412,13 +653,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"ftp");
-			if (a.sendSetupFTPMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install FTP request is already executing").build();
-			} else {
-				res = Response.ok("install FTP request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "ftp");
+				int opID = a.sendSetupFTPMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status", "install FTP has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "ftp");
+					int opID = a.sendSetupFTPMsg(uid, ip.get(i), scIPAddr,installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install FTP has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -429,20 +687,37 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installFTP(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip
+			@QueryParam("ip") List<String> ip
 			) {
 		Response res = null;
 		ApplicationBase a = new ApplicationBase();
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"ftp");
-			if (a.sendSetupFTPMsgOnLinux(uid, ip, scIPAddr)) {
-				res = Response.ok("install FTP request is already executing").build();
-			} else {
-				res = Response.ok("install FTP request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "ftp");
+				int opID = a.sendSetupFTPMsgOnLinux(uid, ip.get(0), scIPAddr);
+				entity.put("opID", opID);
+				entity.put("status", "install FTP has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "ftp");
+					int opID = a.sendSetupFTPMsgOnLinux(uid, ip.get(i),scIPAddr);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install FTP has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -453,7 +728,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installASPNET(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -461,13 +736,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"aspnet");
-			if (a.sendSetupASPNETMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install ASPNET request is already executing").build();
-			} else {
-				res = Response.ok("install ASPNET request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "aspnet");
+				int opID = a.sendSetupASPNETMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status","install ASPNET has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "aspnet");
+					int opID = a.sendSetupASPNETMsg(uid, ip.get(i), scIPAddr,installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install ASPNET has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -478,7 +770,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installSQLServer2008R2(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath,
 			@QueryParam("rootPswd") String rootPswd,
 			@QueryParam("hostName") String hostName,
@@ -489,13 +781,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"sqlserver2008r2");
-			if (a.sendSetupSQLServer2008R2Msg(uid, ip, scIPAddr, installPath,rootPswd,hostName,userName)) {
-				res = Response.ok("install SQLServer2008R2 request is already executing").build();
-			} else {
-				res = Response.ok("install SQLServer2008R2 request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "sqlserver2008r2");
+				int opID = a.sendSetupSQLServer2008R2Msg(uid, ip.get(0),scIPAddr, installPath, rootPswd, hostName, userName);
+				entity.put("opID", opID);
+				entity.put("status","install SQLServer2008R2 has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i),"sqlserver2008r2");
+					int opID = a.sendSetupSQLServer2008R2Msg(uid, ip.get(i),scIPAddr, installPath, rootPswd, hostName,userName);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install SQLServer2008R2 has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -506,7 +815,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installSQLServer2000(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -514,13 +823,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"sqlserver2000");
-			if (a.sendSetupSQLServer2000Msg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install SQLServer2000 request is already executing").build();
-			} else {
-				res = Response.ok("install SQLServer2000 request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "sqlserver2000");
+				int opID = a.sendSetupSQLServer2000Msg(uid, ip.get(0),scIPAddr, installPath);
+				entity.put("opID", opID);
+				entity.put("status","install SQLServer2000 has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i),"sqlserver2000");
+					int opID = a.sendSetupSQLServer2000Msg(uid, ip.get(i),scIPAddr, installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install SQLServer2000 has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -531,7 +857,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installOracle10g(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -539,13 +865,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"oracle10g");
-			if (a.sendSetupOracle10gMsg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install Oracle10g request is already executing").build();
-			} else {
-				res = Response.ok("install Oracle10g request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "oracle10g");
+				int opID = a.sendSetupOracle10gMsg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status","install Oracle10g has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "oracle10g");
+					int opID = a.sendSetupOracle10gMsg(uid, ip.get(i),scIPAddr, installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install Oracle10g has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -556,7 +899,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installOracle11g(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("hostname") String hostname,
 			@QueryParam("inventorypath") String inventorypath,
 			@QueryParam("oraclebase") String oraclebase,
@@ -568,13 +911,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"oracle11g");
-			if (a.sendSetupOracle11gMsg(uid, ip, scIPAddr, hostname,inventorypath,oraclebase,oraclehome,rootPswd)) {
-				res = Response.ok("install Oracle11g request is already executing").build();
-			} else {
-				res = Response.ok("install Oracle11g request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "oracle11g");
+				int opID = a.sendSetupOracle11gMsg(uid, ip.get(0), scIPAddr,hostname, inventorypath, oraclebase, oraclehome,rootPswd);
+				entity.put("opID", opID);
+				entity.put("status","install Oracle11g has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "oracle11g");
+					int opID = a.sendSetupOracle11gMsg(uid, ip.get(i),scIPAddr, hostname, inventorypath, oraclebase,oraclehome, rootPswd);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install Oracle11g has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -585,7 +945,7 @@ public class AppResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response install360(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
+			@QueryParam("ip") List<String> ip,
 			@QueryParam("installPath") String installPath
 			) {
 		Response res = null;
@@ -593,13 +953,30 @@ public class AppResource {
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
-			scIPAddr = dbop.getRCAddrByIP(uid, ip,"360");
-			if (a.sendSetup360Msg(uid, ip, scIPAddr, installPath)) {
-				res = Response.ok("install 360 request is already executing").build();
-			} else {
-				res = Response.ok("install 360 request failed").build();
+			if (ip.size() == 1) {
+				JSONObject entity = new JSONObject();
+				scIPAddr = dbop.getRCAddrByIP(uid, ip.get(0), "360");
+				int opID = a.sendSetup360Msg(uid, ip.get(0), scIPAddr,installPath);
+				entity.put("opID", opID);
+				entity.put("status", "install 360 has already been executing ");
+				res = Response.ok(entity).build();
+			} else if (ip.size() > 1) {
+				JSONArray jarr = new JSONArray();
+				for (int i = 0; i < ip.size(); i++) {
+					JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
+					scIPAddr = dbop.getRCAddrByIP(uid, ip.get(i), "360");
+					int opID = a.sendSetup360Msg(uid, ip.get(i), scIPAddr,installPath);
+					// 构造要返回给用户的json对象
+					entity.put("opID", opID);
+					entity.put("status","install 360 has already been executing ");//
+					jarr.put(entity);
+				}
+				res = Response.ok(jarr).build();
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -607,18 +984,20 @@ public class AppResource {
 	}
 	
 	
-	@GET
-	@Path("/status")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getStatus(@QueryParam("uid") String uid,
-			@QueryParam("ip") String ip,
-			@QueryParam("softwareName") String softwareName
-			) {
-		Response res = null;
-		ApplicationBase a = new ApplicationBase();
-		res = Response.ok(a.sendGetStatusMsg(uid, ip, softwareName)).build();
-		return res;
-	}
+//	@GET
+//	@Path("/status")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public Response getStatus(@QueryParam("uid") String uid,
+//			@QueryParam("ip") String ip,
+//			@QueryParam("softwareName") String softwareName
+//			) {
+//		Response res = null;
+//		ApplicationBase a = new ApplicationBase();JSONObject entity = new JSONObject();
+//		entity.put("opID", opID);
+//		entity.put("status", "");
+//		res = Response.ok(entity).build();
+//		return res;
+//	}
 	
 }

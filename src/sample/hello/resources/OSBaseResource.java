@@ -2,21 +2,14 @@ package sample.hello.resources;
 
 import java.util.List;
 
-import javax.persistence.Entity;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -47,12 +40,20 @@ public class OSBaseResource {
 			@QueryParam("ip") String ip,
 			@QueryParam("userName") String userName,
 			@QueryParam("passwd") String passwd) {
-		Response res;
+		Response res = null;
+		JSONObject entity = new JSONObject();
 		OSBase ob = new OSBase();
-		if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
-			res =  Response.ok("change passwd success").build();
-		} else {
-			res =  Response.ok("change passwd failed").build();
+		try {
+			if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
+				entity.put("response", "change passwd success");
+				res = Response.ok(entity).build();
+			} else {
+				entity.put("response", "change passwd failed");
+				res = Response.ok(entity).build();
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return res;
 	}
@@ -71,12 +72,15 @@ public class OSBaseResource {
 			String userName = (String) o.get("userName");
 			System.out.println(o.get("passwd"));
 			String passwd = (String) o.get("passwd");
-			
+			JSONObject entity = new JSONObject();
 			OSBase ob = new OSBase();
 			if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
-				res =  Response.ok("change passwd success").build();
+//				res =  Response.ok("change passwd success").build();
+				entity.put("response", "change passwd success");
+				res = Response.ok(entity).build();
 			} else {
-				res =  Response.ok("change passwd failed").build();
+				entity.put("response", "change passwd failed");
+				res =  Response.ok(entity).build();
 			}
 			return res;
 		} catch (JSONException e) {

@@ -5,8 +5,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 
 import javax.ws.rs.QueryParam;
+
+import sample.DBOP.DBOperation;
 
 import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
@@ -15,6 +18,22 @@ import edu.xidian.message.MsgType;
 
 public class ApplicationBase {
 	/**
+	 * 将安装软件事件插入到数据库中
+	 * @param hostIp
+	 * @param opName
+	 */
+	public int insertEvent(String hostIp,String opName){
+		int opID = -1;
+		DBOperation dbop = new DBOperation();
+		try {
+			opID = dbop.insertOperation(hostIp,opName);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	/**
 	 * 安装tomcat
 	 * @param uid
 	 * @param ip
@@ -22,7 +41,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupTomcatMsg(String uid,String ip,String[] scIPAddr,String installPath,String jdkPath){
+	public int sendSetupTomcatMsg(String uid,String ip,String[] scIPAddr,String installPath,String jdkPath){
+		int opID = insertEvent(ip,"setupTomcat");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -49,7 +69,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupTomcat)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -61,7 +81,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装tomcat on Linux
@@ -71,7 +91,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupTomcatOnLinuxMsg(String uid,String ip,String[] scIPAddr,String installPath,String jdkName,String jdkPath){
+	public int sendSetupTomcatOnLinuxMsg(String uid,String ip,String[] scIPAddr,String installPath,String jdkName,String jdkPath){
+		int opID = insertEvent(ip,"setupTomcat");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -99,7 +120,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupTomcat)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -111,7 +132,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Mysql
@@ -121,7 +142,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupMySqlMsg(String uid,String ip,String[] scIPAddr,String installPath,String pswd){
+	public int sendSetupMySqlMsg(String uid,String ip,String[] scIPAddr,String installPath,String pswd){
+		int opID = insertEvent(ip,"setupMySql");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -148,7 +170,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupMySql)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -160,7 +182,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装 Mysql on Linux
@@ -170,7 +192,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupMySqlOnLinuxMsg(String uid,String ip,String[] scIPAddr,String pswd){
+	public int sendSetupMySqlOnLinuxMsg(String uid,String ip,String[] scIPAddr,String pswd){
+		int opID = insertEvent(ip,"setupMySql");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -198,7 +221,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupMySql)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -210,7 +233,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Jdk
@@ -220,7 +243,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupJdkMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupJdkMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupJdk");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -246,7 +270,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupJdk)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -258,7 +282,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Apache
@@ -268,7 +292,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupApacheMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupApacheMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupApache");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -294,7 +319,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupApache)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -306,7 +331,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Nginx
@@ -316,7 +341,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupNginxMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupNginxMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupNginx");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -350,7 +376,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupNginx)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -362,7 +388,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装ZendGuardLoader
@@ -372,7 +398,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupZendGuardLoaderMsg(String uid,String ip,String[] scIPAddr,String phpPath){
+	public int sendSetupZendGuardLoaderMsg(String uid,String ip,String[] scIPAddr,String phpPath){
+		int opID = insertEvent(ip,"setupZendGuardLoader");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -398,7 +425,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -410,7 +437,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装ZendGuardLoader Linux
@@ -420,7 +447,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupZendGuardLoaderMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath,String phpPath){
+	public int sendSetupZendGuardLoaderMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath,String phpPath){
+		int opID = insertEvent(ip,"setupZendGuardLoader");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -447,7 +475,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -459,7 +487,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Python
@@ -469,7 +497,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupPythonMsg(String uid,String ip,String[] scIPAddr){
+	public int sendSetupPythonMsg(String uid,String ip,String[] scIPAddr){
+		int opID = insertEvent(ip,"setupPython");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -494,7 +523,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupPython)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -506,7 +535,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Python Linux
@@ -516,7 +545,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupPythonMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupPythonMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupPython");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -542,7 +572,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupPython)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -554,7 +584,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Memcached
@@ -564,7 +594,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupMemcachedMsg(String uid,String ip,String[] scIPAddr){
+	public int sendSetupMemcachedMsg(String uid,String ip,String[] scIPAddr){
+		int opID = insertEvent(ip,"setupMemcached");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -590,7 +621,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupMemcached)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -602,7 +633,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Memcached Linux
@@ -612,7 +643,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupMemcachedMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupMemcachedMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupMemcached");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -638,7 +670,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupMemcached)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -650,7 +682,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装IISRewrite
@@ -660,7 +692,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupIISRewriteMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupIISRewriteMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupIISRewrite");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -686,7 +719,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupIISRewrite)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -698,7 +731,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装ASP
@@ -708,7 +741,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupASPMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupASPMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupASP");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -734,7 +768,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupASP)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -746,7 +780,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装FTP
@@ -756,7 +790,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupFTPMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupFTPMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupFTP");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -782,7 +817,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupFTP)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -794,7 +829,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装FTP Linux
@@ -804,7 +839,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupFTPMsgOnLinux(String uid,String ip,String[] scIPAddr){
+	public int sendSetupFTPMsgOnLinux(String uid,String ip,String[] scIPAddr){
+		int opID = insertEvent(ip,"setupFTP");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -829,7 +865,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupFTP)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -841,7 +877,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装ASPNET
@@ -851,7 +887,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupASPNETMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupASPNETMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupASPNET");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -877,7 +914,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupASPNET)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -889,7 +926,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装SQLServer2008R2
@@ -902,7 +939,8 @@ public class ApplicationBase {
 	 * @param userName
 	 * @return
 	 */
-	public boolean sendSetupSQLServer2008R2Msg(String uid,String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
+	public int sendSetupSQLServer2008R2Msg(String uid,String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
+		int opID = insertEvent(ip,"setupSQLServer2008R2");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -931,7 +969,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupSQLServer2008R2)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -943,7 +981,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装SQLServer2000
@@ -953,7 +991,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupSQLServer2000Msg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupSQLServer2000Msg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupSQLServer2000");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -979,7 +1018,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupSQLServer2000)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -991,7 +1030,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Oracle10g
@@ -1001,7 +1040,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetupOracle10gMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupOracle10gMsg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setupOracle10g");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1027,7 +1067,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupOracle10g)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -1039,7 +1079,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装Oracle11g
@@ -1053,8 +1093,9 @@ public class ApplicationBase {
 	 * @param rootPswd
 	 * @return
 	 */
-	public boolean sendSetupOracle11gMsg(String uid,String ip,String[] scIPAddr,String hostname,String inventorypath,
+	public int sendSetupOracle11gMsg(String uid,String ip,String[] scIPAddr,String hostname,String inventorypath,
 			String oraclebase,String oraclehome, String rootPswd){
+		int opID = insertEvent(ip,"setupOracle11g");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1084,7 +1125,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setupOracle11g)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -1096,7 +1137,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	/**
 	 * 安装360
@@ -1106,7 +1147,8 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public boolean sendSetup360Msg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetup360Msg(String uid,String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setup360");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1132,7 +1174,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setup360)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
-					return true;
+					return opID;
 				}
 				System.out.println(ret);
 			}
@@ -1144,7 +1186,7 @@ public class ApplicationBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return opID;
 	}
 	
 	public String sendGetStatusMsg(String uid,String ip,String softwareName){
@@ -1171,7 +1213,7 @@ public class ApplicationBase {
 			if (msg.getType().equals(MsgType.setup360)) {
 				String ret = (String)msg.getValues();
 //				if(ret.equals("success")||ret.equals("executing")){
-//					return true;
+//					return opID;
 //				}
 				System.out.println(ret);
 				return ret;

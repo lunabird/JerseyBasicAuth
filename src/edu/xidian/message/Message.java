@@ -21,7 +21,7 @@ public class Message implements Serializable {
 	 * @fieldType: String
 	 * @Description: 用户ID
 	 */
-	private String userID;
+	private String opID;
 	/**
 	 * @fieldName: values
 	 * @fieldType: String[]
@@ -37,9 +37,9 @@ public class Message implements Serializable {
 	 * @param time
 	 * @param values 
 	 */
-	public Message(MsgType type, String userID,Object values) {
+	public Message(MsgType type, String opID,Object values) {
 		this.type = type;
-		this.userID = userID;
+		this.opID = opID;
 		this.values=values;
 	}
 
@@ -67,8 +67,8 @@ public class Message implements Serializable {
 	 * @Description: 获取用户ID
 	 * @return: String
 	 */
-	public String getUserID() {
-		return userID;
+	public String getOpID() {
+		return opID;
 	}
 	
 	/** 

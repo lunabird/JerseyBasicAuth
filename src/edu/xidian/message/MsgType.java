@@ -30,5 +30,5 @@ public enum MsgType {
 	/**
 	 * ²Ù×÷×´Ì¬»ñÈ¡
 	 */
-	getStatus
+	getDownloadStatus,getScriptOutput
 }
