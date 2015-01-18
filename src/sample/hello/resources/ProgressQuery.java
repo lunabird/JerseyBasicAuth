@@ -37,8 +37,6 @@ public class ProgressQuery {
 		}		
 		String status = dbop.getOpStatus(eid);
 		entity.put("status", status);
-		//还可以添加  进度  信息---要计算
-		//entity.put("progress","");
 		res =  Response.ok(entity).build();
 		return res;
 	}

@@ -12,6 +12,8 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 import sample.DBOP.DBOperation;
+import edu.xidian.enc.AESUtil;
+import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
 import edu.xidian.message.XmlUtils;
 
@@ -75,7 +77,14 @@ class ResponseThread extends Thread {
 		ObjectInputStream ois;
 		try {
 			ois = new ObjectInputStream(socket.getInputStream());
-			Message msg = (Message) ois.readObject();//
+			
+			byte[] rcvstr = (byte[])ois.readObject();
+			//Ω‚√‹
+			byte[] str2 = AESUtil.decrypt(rcvstr,socket.getInetAddress().toString());
+			String str1 = new String(str2,"iso-8859-1");
+			Message msg = (Message)SerializeUtil.deserialize(str1); 			
+			
+//			Message msg = (Message) ois.readObject();//
 //			Message outMes = null;
 //			ObjectOutputStream oos = new ObjectOutputStream(
 //					socket.getOutputStream());

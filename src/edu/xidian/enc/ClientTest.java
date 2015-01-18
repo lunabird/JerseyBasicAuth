@@ -47,4 +47,57 @@ public class ClientTest {
 			e.printStackTrace();
 		} 
 	}*/
+	public static void main(String [] args) throws Exception {
+		String uid = "12";
+		String ip = "127.0.0.1";
+//		String[] scIPAddr = {"1","3","2","4"};
+//		String installPath = "C://profile";
+//		String jdkPath = "D://profile";
+		//int eid = insertEvent(ip,"setupTomcat");
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+//			String[] values = new String[4];
+//			values[0] = scIPAddr[0];
+//			values[1] = scIPAddr[1];
+//			values[2] = installPath;
+//			values[3] = jdkPath;
+			Message msg = new Message(MsgType.setupTomcat, uid,"123456");
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			System.out.println("加密前的序列化串："+"**************");
+			System.out.println(datatemp);
+			
+         //   String str = MD5Util.convertMD5(datatemp);
+            byte[] str = AESUtil.encrypt(datatemp,ip);
+            System.out.println("加密后的序列化串："+"**************");
+            System.out.println(new String(str,"iso-8859-1"));
+            //传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			/*ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			str = (byte[])ois.readObject();
+			//解密
+			//String str2 = MD5Util.convertMD5(str);
+			byte[] str2 = AESUtil.decrypt(str);
+			String str1 = new String(str2);
+			msg = (Message)SerializeUtil.deserialize(str1); 
+			if (msg.getType().equals(MsgType.setupTomcat)) {
+				String ret = (String)msg.getValues();
+				if(ret.equals("success")||ret.equals("executing")){
+					//return eid;
+				}
+				System.out.println(ret);
+			}*/
+			socket.close();
+		}  catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//return eid;
+	}
 }

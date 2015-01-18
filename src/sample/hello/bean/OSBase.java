@@ -1,6 +1,5 @@
 package sample.hello.bean;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,73 +7,57 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import sample.DBOP.DBOperation;
+import edu.xidian.enc.AESUtil;
 import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
 import edu.xidian.message.MsgType;
 
 public class OSBase {
-	String hostName;
-	String IP;
-	Map<String,String> userPasswd;
-	Map<String,String> sysService;
-	File[] sysLog;
-	String[] affiIP;
-	String[] mask;
-	String[] dns;
-	
-	public String getHostName(){
-		return hostName;
-	}
-	public void setHostName(String hostName){
-		this.hostName = hostName;
-	}
-	public Map<String,String> getUserPasswd(){
-		return userPasswd;
-	}
-	public void setUserPasswd(Map<String,String> userPasswd){
-		this.userPasswd = userPasswd;
-	}
-	public Map<String,String> getSysService(){
-		return sysService;
-	}
-	public void setSysService(Map<String,String> sysService){
-		this.sysService = sysService;
-	}
-	public File[] getSysLog(){
-		return sysLog;
-	}
-	public void setSysLog(File[] sysLog){
-		this.sysLog = sysLog;
-	}
-	public String[] getAffiIP(){
-		return affiIP;
-	}
-	public void setAffiIP(String[] affiIP){
-		this.affiIP = affiIP;
-	}
-	public String[] getMask(){
-		return mask;
-	}
-	public void setMask(String[] mask){
-		this.mask = mask;
-	}
-	public String[] getDns(){
-		return dns;
-	}
-	public void setDns(String[] dns){
-		this.dns = dns;
-	}
 //	public static void main(String[] args){
 //		OSBase ob = new OSBase();
 //		ob.sendChangePasswdMsg("uid321321", "192.168.0.202", "Administrator", "5413");
 //	}
+	
+	/**
+	 * 将基础环境配置事件插入到数据库中
+	 * @param hostIp
+	 * @param opName
+	 */
+	public int insertEvent(String hostIp,String opName){
+		int opID = -1;
+		DBOperation dbop = new DBOperation();
+		try {
+			opID = dbop.insertOperation(hostIp,opName);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	/**
+	 * 更新基础环境配置的状态，操作的是opinfo表
+	 * @param opID
+	 * @param status
+	 * @return
+	 */
+	public boolean updateOpStatus(int opID,String status){
+		boolean flag = false;
+		DBOperation dbop = new DBOperation();
+		try {
+			flag = dbop.updateOpStatus(opID,status);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
 	/**
 	 * 修改密码
 	 * @param uid
@@ -82,8 +65,10 @@ public class OSBase {
 	 * @param cUserName
 	 * @param cPasswd
 	 * @return
+	 * @throws SQLException 
 	 */
-	public boolean sendChangePasswdMsg(String uid,String ip,String cUserName,String cPasswd){
+	public String sendChangePasswdMsg(String ip,String cUserName,String cPasswd){
+		int opID = insertEvent(ip,"changePasswd");
 		//发送Socket消息给Agent
 		try {
 			System.out.println("ip*************************"+ip);
@@ -91,8 +76,27 @@ public class OSBase {
 			String[] values=new String[2];
 			values[0]=cUserName;
 			values[1]=cPasswd;
-			Message msg = new Message(MsgType.changePasswd, uid,values);
+			Message msg = new Message(MsgType.changePasswd, opID+"",values);
+			
 			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
+			
+			
+			
+			/*//加密
 			String datatemp = SerializeUtil.serialize(msg);  
             String str = MD5Util.convertMD5(datatemp);
             //传输
@@ -105,13 +109,17 @@ public class OSBase {
 			str = (String)ois.readObject();
 			//解密
 			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			msg = (Message)SerializeUtil.deserialize(str2); */
+			
+			
+			
 			if (msg.getType().equals(MsgType.changePasswd)) {
 				String ret = (String)msg.getValues();
-				if(ret.equals("success")){
-					return true;
+				if(ret.equals("0x000")){
+					//在数据库里更新该op的状态
+					updateOpStatus(opID,"0x000");
+					return "0x000";
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -120,20 +128,24 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x001");
+		return "0x001";
 	}
 	/**
 	 * 查看系统服务
 	 * @param uid
 	 * @param ip
 	 */
-	public void sendGetSysServiceMsg(String uid,String ip){
+	/*public void sendGetSysServiceMsg(String ip){
 		try {
 			Socket socket = new Socket(ip, 9000);
 			String[] values=new String[2];
 
-			Message msg = new Message(MsgType.getSysService, uid,null);
+			Message msg = new Message(MsgType.getSysService, opID+"",null);
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(msg);
@@ -155,15 +167,16 @@ public class OSBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 	/**
 	 * 启动/停止 系统服务
 	 * @param uid
 	 * @param ip
 	 * @return
+	 * @throws SQLException 
 	 */
-	public boolean sendchgSysServiceStateMsg(String uid,String ip,String serviceName,String operation){
-		
+	public String sendchgSysServiceStateMsg(String ip,String serviceName,String operation){
+		int opID = -1;
 		try {
 			Socket socket = new Socket(ip, 9000);
 			String[] values=new String[2];
@@ -172,12 +185,30 @@ public class OSBase {
 			
 			Message msg;
 			if(operation.equals("start")){
-				msg = new Message(MsgType.startService, uid,values[0]);
+				opID = insertEvent(ip,"startService");
+				msg = new Message(MsgType.startService, opID+"",values[0]);
 			}else{
-				msg = new Message(MsgType.stopService, uid,values[0]);
+				opID = insertEvent(ip,"stopService");
+				msg = new Message(MsgType.stopService, opID+"",values[0]);
 			}
 
 			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
+			
+			/*//加密
 			String datatemp = SerializeUtil.serialize(msg);  
             String str = MD5Util.convertMD5(datatemp);
             //传输
@@ -190,19 +221,25 @@ public class OSBase {
 			str = (String)ois.readObject();
 			//解密
 			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			msg = (Message)SerializeUtil.deserialize(str2); */
 			if (msg.getType().equals(MsgType.startService)) {
 				String ret = (String)msg.getValues();
-				if(ret.equals("success")){
-					return true;
+				if(ret.equals("0x010")){
+					updateOpStatus(opID,"0x010");
+					return "0x010";
+				}else{
+					updateOpStatus(opID,"0x011");
+					return "0x011";
 				}
-				System.out.println(ret);
 			}else if(msg.getType().equals(MsgType.stopService)){
 				String ret = (String)msg.getValues();
-				if(ret.equals("success")){
-					return true;
+				if(ret.equals("0x020")){
+					updateOpStatus(opID,"0x020");
+					return "0x020";
+				}else{
+					updateOpStatus(opID,"0x021");
+					return "0x021";
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -211,9 +248,12 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		return false;
+		return "0x021";
 	}
 	/**
 	 * 查看系统日志
@@ -222,14 +262,15 @@ public class OSBase {
 	 * @param logType
 	 * @return
 	 */
-	public JSONObject sendViewSysLogMsg(String uid,String ip,String logType){
+	public JSONObject sendViewSysLogMsg(String ip,String logType){
 		JSONObject o = new JSONObject();
+		int opID = insertEvent(ip,"viewErrLog");
 		//发送Socket消息给Agent
 		/*try {
 			Socket socket = new Socket(ip, 9000);
 			String[] values=new String[1];
 			values[0]=logType;
-			Message msg = new Message(MsgType.viewErrLog, uid,values);
+			Message msg = new Message(MsgType.viewErrLog, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
             String str = MD5Util.convertMD5(datatemp);
@@ -281,32 +322,34 @@ public class OSBase {
 	 * @param dns
 	 * @return
 	 */
-	public boolean sendChangeIPOnLinuxMsg(String uid,String ip,String deviceName,String mask,String changeToIP){
-		//发送Socket消息给Agent
+	public String sendChangeIPOnLinuxMsg(String ip,String deviceName,String mask,String changeToIP){
+		int opID = insertEvent(ip,"changeIP");//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9000);
 			String[] values = new String[3];
 			values[0]=deviceName;
 			values[1]=mask;
 			values[2]=changeToIP;
-			Message msg = new Message(MsgType.changeIP, uid,values);
+			Message msg = new Message(MsgType.changeIP, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
+			
 			//获得反馈信息
 			socket.setSoTimeout(3000);
 			try {
 				ObjectInputStream ois = new ObjectInputStream(
 						socket.getInputStream());
-				str = (String) ois.readObject();
-				// 解密
-				String str2 = MD5Util.convertMD5(str);
-				msg = (Message) SerializeUtil.deserialize(str2);
-				if (msg.getType().equals(MsgType.changeAffiIP)) {
+				byte[] rcvstr = (byte[])ois.readObject();
+				//解密
+				byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+				String str1 = new String(str2,"iso-8859-1");
+				msg = (Message)SerializeUtil.deserialize(str1); 
+				if (msg.getType().equals(MsgType.changeIP)) {
 					// 此处应该返回执行结果失败
 					System.out.println("modify ip addr failed!");
 				}
@@ -315,7 +358,8 @@ public class OSBase {
 				System.out.println("modify ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIP);
-				return true;
+				updateOpStatus(opID,"0x050");
+				return  "0x050";
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -328,7 +372,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x051");
+		return "0x051";
 	}
 	/**
 	 * windows修改主机affi IP
@@ -341,9 +386,11 @@ public class OSBase {
 	 * @param affiIP
 	 * @param affiMask
 	 * @return
+	 * @throws SQLException 
 	 */
-	public boolean sendChangeAffiIPMsg(String uid, String ip, String mac, String[] affiIP,
-			String[] affiMask,String[] affiGateway) {
+	public String sendChangeAffiIPMsg( String ip, String mac, String[] affiIP,
+			String[] affiMask,String[] affiGateway){
+		int opID = insertEvent(ip,"changeAffiIP");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9000);
@@ -351,26 +398,28 @@ public class OSBase {
 			values[0] = affiIP;
 			values[1] = affiMask;
 			values[2] = affiGateway;
-			Message msg = new Message(MsgType.changeAffiIP, uid, values);
+			Message msg = new Message(MsgType.changeAffiIP, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.changeAffiIP)) {
 				String ret = (String)msg.getValues();
-				if(ret.equals("success")){
+				if(ret.equals("0x060")){
 					System.out.println("windows change affi ip :"+ret);
-					return true;
+					updateOpStatus(opID,"0x060");
+					return "0x060";
 				}
 			}
 			socket.close();
@@ -380,10 +429,14 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x061");
+		return "0x061";
 	}
-	/*public boolean sendChangeAffiIPMsg(String uid, String ip, String mac,String changeToIp,
+	/*public boolean sendChangeAffiIPMsg( String ip, String mac,String changeToIp,
 			String mask,String gateway, String[] dns, String[] affiIP,
 			String[] affiMask,String[] affiGateway) {
 		// 发送Socket消息给Agent
@@ -399,7 +452,7 @@ public class OSBase {
 			values[4] = affiIP;
 			values[5] = affiMask;
 			values[6] = affiGateway;
-			Message msg = new Message(MsgType.changeAffiIP, uid, values);
+			Message msg = new Message(MsgType.changeAffiIP, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
             String str = MD5Util.convertMD5(datatemp);
@@ -457,8 +510,9 @@ public class OSBase {
 	 * @param dns
 	 * @return
 	 */
-	public boolean sendChangeIPMsg(String uid, String ip, String mac,String changeToIp,
+	public String sendChangeIPMsg( String ip, String mac,String changeToIp,
 			String mask,String gateway, String[] dns) {
+		int opID = insertEvent(ip,"changeIP");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9000);
@@ -469,31 +523,35 @@ public class OSBase {
 			values[2] = gateway;
 			values[3] = dns;
 			
-			Message msg = new Message(MsgType.changeIP, uid, values);
+			Message msg = new Message(MsgType.changeIP, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
+			
 			//获得反馈信息  -------  -*-
 			socket.setSoTimeout(3000);
 			try {
 				ObjectInputStream ois = new ObjectInputStream(
 						socket.getInputStream());
-				str = (String) ois.readObject();
-				// 解密
-				String str2 = MD5Util.convertMD5(str);
-				msg = (Message) SerializeUtil.deserialize(str2);
+				byte[] rcvstr = (byte[])ois.readObject();
+				//解密
+				byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+				String str1 = new String(str2,"iso-8859-1");
+				msg = (Message)SerializeUtil.deserialize(str1); 
 				if (msg.getType().equals(MsgType.changeIP)) {
 					// 此处应该返回执行结果失败
 					String ret = (String)msg.getValues();
-					if(ret.equals("success")){
-						return true;
+					if(ret.equals("0x050")){
+						updateOpStatus(opID,"0x050");
+						return "0x050";
 					}else{
 						System.out.println("modify ip addr failed!");
-						return false;
+						updateOpStatus(opID,"0x051");
+						return "0x051";
 					}
 				}
 			} catch (SocketTimeoutException ste) {
@@ -501,7 +559,8 @@ public class OSBase {
 				System.out.println("modify windows ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIp);
-				return true;
+				updateOpStatus(opID,"0x050");
+				return "0x050";
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -514,7 +573,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x051");
+		return "0x051";
 	}
 	/**
 	 * 修改主机附属IP on Linux
@@ -524,8 +584,10 @@ public class OSBase {
 	 * @param mask
 	 * @param changeToIp
 	 * @return
+	 * @throws SQLException 
 	 */
-	public boolean sendChangeAffiIPOnLinuxMsg(String uid, String ip, String deviceName,String mask,String changeToIp) {
+	public String sendChangeAffiIPOnLinuxMsg( String ip, String deviceName,String mask,String changeToIp) {
+		int opID = insertEvent(ip,"changeAffiIP");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9000);
@@ -534,25 +596,27 @@ public class OSBase {
 			values[1] = mask;
 			values[2] = changeToIp;
 			
-			Message msg = new Message(MsgType.changeAffiIP, uid, values);
+			Message msg = new Message(MsgType.changeAffiIP, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.changeAffiIP)) {
 				String ret = (String)msg.getValues();
-				if (ret.equals("success")) {
-					return true;
+				if (ret.equals("0x060")) {
+					updateOpStatus(opID,"0x060");
+					return "0x060";
 				}
 				System.out.println(ret);
 			}
@@ -563,8 +627,12 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x061");
+		return "0x061";
 	}
 	/**
 	 * 磁盘格式化
@@ -572,29 +640,32 @@ public class OSBase {
 	 * @param ip
 	 * @return
 	 */
-	public boolean sendDiskFormatMsg(String uid, String ip) {
+	public String sendDiskFormatMsg( String ip) {
+		int opID = insertEvent(ip,"diskFormat");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9000);
-			Message msg = new Message(MsgType.diskFormat, uid, null);
+			Message msg = new Message(MsgType.diskFormat, opID+"", null);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.diskFormat)) {
 				String ret = (String)msg.getValues();
-				if (ret.equals("success")) {
-					return true;
+				if (ret.equals("0x030")) {
+					updateOpStatus(opID,"0x030");
+					return "0x030";
 				}
 				System.out.println(ret);
 			}
@@ -605,8 +676,12 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x031");
+		return "0x031";
 	}
 	/**
 	 * 修改安全规则
@@ -618,7 +693,8 @@ public class OSBase {
 	 * @param addSecIP
 	 * @return
 	 */
-	public boolean sendChangeSecRuleMsg(String uid,String ip,String policyName,String protocol, String port,String addSecIP){
+	public String sendChangeSecRuleMsg(String ip,String policyName,String protocol, String port,String addSecIP){
+		int opID = insertEvent(ip,"changeSecRule");
 		try {
 			Socket socket = new Socket(ip, 9000);
 			String[] values = new String[4];
@@ -626,25 +702,27 @@ public class OSBase {
 			values[1] = protocol;
 			values[2] = port;
 			values[3] = addSecIP;
-			Message msg = new Message(MsgType.changeSecRule, uid, values);
+			Message msg = new Message(MsgType.changeSecRule, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.changeSecRule)) {
 				String ret = (String)msg.getValues();
-				if (ret.equals("success")) {
-					return true;
+				if (ret.equals("0x040")) {
+					updateOpStatus(opID,"0x040");
+					return "0x040";
 				}
 				System.out.println(ret);
 			}
@@ -655,8 +733,12 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x041");
+		return "0x041";
 	}
 	/**
 	 * 修改安全规则 on linux
@@ -668,32 +750,35 @@ public class OSBase {
 	 * @param addSecIP
 	 * @return
 	 */
-	public boolean sendChangeSecRuleOnLinuxMsg(String uid,String ip,String protocol,String sourceIP, String port){
+	public String sendChangeSecRuleOnLinuxMsg(String ip,String protocol,String sourceIP, String port){
+		int opID = insertEvent(ip,"changeSecRule");
 		try {
 			Socket socket = new Socket(ip, 9000);
 			String[] values = new String[4];
 			values[0] = protocol;
 			values[1] = sourceIP;
 			values[2] = port;
-			Message msg = new Message(MsgType.changeSecRule, uid, values);
+			Message msg = new Message(MsgType.changeSecRule, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.changeSecRule)) {
 				String ret = (String)msg.getValues();
-				if (ret.equals("success")) {
-					return true;
+				if (ret.equals("0x040")) {
+					updateOpStatus(opID,"0x040");
+					return "0x040";
 				}
 				System.out.println(ret);
 			}
@@ -704,33 +789,40 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x041");
+		return "0x041";
 	}
 	
 	
-	public boolean sendChangeUlimitOnLinuxMsg(String uid,String ip,String ulimit){
+	public String sendChangeUlimitOnLinuxMsg(String ip,String ulimit){
+		int opID = insertEvent(ip,"changeUlimit");
 		try {
 			Socket socket = new Socket(ip, 9000);
-			Message msg = new Message(MsgType.changeUlimit, uid, ulimit);
+			Message msg = new Message(MsgType.changeUlimit, opID+"", ulimit);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.changeUlimit)) {
 				String ret = (String)msg.getValues();
-				if (ret.equals("success")) {
-					return true;
+				if (ret.equals("0x070")) {
+					updateOpStatus(opID,"0x070");
+					return "0x070";
 				}
 				System.out.println(ret);
 			}
@@ -741,7 +833,11 @@ public class OSBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		updateOpStatus(opID,"0x071");
+		return "0x071";
 	}
 }

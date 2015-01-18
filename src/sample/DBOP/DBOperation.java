@@ -58,14 +58,14 @@ public class DBOperation {
 		return flag;
 	}
 	/**
-	 * 插入新的操作请求到数据库，先插一条操作信息到op表，再在opinfo表里自动插入一条开始执行的记录。
+	 * 插入新的操作(op)到数据库，先插一条操作信息到op表，再在opinfo表里自动插入一条开始执行的记录。
 	 * 基础环境配置，2步
-	 * 安装，5步
+	 * 安装，5步(开始执行-->正在下载-->下载完成-->正在安装-->安装结果码)
 	 * 卸载，脚本执行，3步
-	 * 更新，7步
+	 * 更新，5步（与安装相同）
 	 * 但是它们的第一步都是“开始执行”-->因为要支持各种不同的操作系统，所以数据库里面用英文存储
 	 * @param hostIP 执行命令的虚拟机IP
-	 * @param opName 操作名，可以是MsgType里面的枚举名字
+	 * @param opName 操作名，必须是是MsgType里面的枚举名字
 	 * @return opID 操作ID
 	 * @throws SQLException
 	 */
@@ -272,112 +272,6 @@ public class DBOperation {
 	
 	
 	
-//	/**@author hp
-//	 * 根据事件id修改其对应的事件状态
-//	 * @param eid 事件id
-//	 * @param status 事件状态
-//	 * @return 修改结果成功或失败
-//	 * @throws SQLException
-//	 */
-//	public boolean updateEventStatus(int eid,String status) throws SQLException{
-//		Statement stmt = null;
-//		stmt = con.createStatement();
-//		boolean flag = false;
-//		if(status.contains("%")){//表示事件正在运行中，没有终止
-//			String sql = "UPDATE  event  SET status ='"+status+"' WHERE eventid="+eid+"";
-//			flag = stmt.execute(sql);
-//		}else{//不包含“%”，表示事件已经终止,要记录结束时间
-//			java.util.Date date=new java.util.Date();
-//			Timestamp stoptime=new Timestamp(date.getTime());
-//			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//			String sql = "UPDATE  event  SET status ='"+status+"', stoptime='"+df.format(stoptime)+"' WHERE eventid="+eid+"";
-//			System.out.println(sql);
-//			flag = stmt.execute(sql);
-//		}
-//		//释放资源
-//		dbcManager.close();
-//		if(stmt!=null)
-//		{
-//			try{
-//				stmt.close();
-//			}catch(Exception e)
-//			{
-//				e.printStackTrace();
-//			}
-//		}
-//		return flag;
-//	}
-//	/**
-//	 * 将event事件记录插入数据库表
-//	 * @param destIp
-//	 * @param description
-//	 * @return
-//	 * @throws SQLException
-//	 */
-//	public int insertIntoEventTable(String destIp,String description) throws SQLException{
-//		Statement stmt = null;
-//		stmt = con.createStatement();
-//		ResultSet rs = null;
-//		int eid = -1;
-//		java.util.Date date=new java.util.Date();
-//		Timestamp starttime=new Timestamp(date.getTime());
-//		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//		String sql = "INSERT INTO event (destip,progress,description,starttime) VALUES ('"+destIp+"','0%','"+description+"','"+df.format(starttime)+"')";
-//		int flag = stmt.executeUpdate(sql);
-//		if(flag>0){
-//			String sql1 ="SELECT eventid FROM event WHERE starttime='"+df.format(starttime)+"'";
-//			rs = stmt.executeQuery(sql1);
-//			if(rs.next()) {
-//				System.out.println("eid:" + rs.getString(1));
-//				eid = Integer.parseInt(rs.getString(1));
-//			}
-//		}
-//		//释放资源
-//		dbcManager.close();
-//		if(stmt!=null)
-//		{
-//			try{
-//				stmt.close();
-//			}catch(Exception e)
-//			{
-//				e.printStackTrace();
-//			}
-//		}
-//		return eid;
-//	}
-//
-//
-//	
-//	/**
-//	 * 根据eid查询事件运行的状态
-//	 * @param eid
-//	 * @throws SQLException 
-//	 */
-//	public String queryEventStatus(int eid) throws SQLException{
-//		Statement stmt = null;
-//		stmt = con.createStatement();
-//		ResultSet rs = null;
-//		String progress = null;
-//		//获得该用户可操作的所有主机
-//		String sql = "SELECT progress FROM event WHERE eventid="+eid;
-//		rs = stmt.executeQuery(sql);
-//		if(rs.next()){
-//			System.out.println(rs.getString(1));
-//			progress = rs.getString(1);
-//		}
-//		//释放资源
-//		dbcManager.close();
-//		if(stmt!=null)
-//		{
-//			try{
-//				stmt.close();
-//			}catch(Exception e)
-//			{
-//				e.printStackTrace();
-//			}
-//		}
-//		return progress;
-//	}
 	
 	/**@author XQ
 	 * 根据用户ID查询数据库获得该用户可以操作的主机及其所对应的软件中心地址列表
@@ -445,9 +339,6 @@ public class DBOperation {
 		
 		return resultList;
 	}
-	
-	
-	
 	/**@author ZXQ
 	 * 根据用户名和主机ID查询数据库获得该主机所对应的软件中心地址
 	 * @param userID 用户ID
@@ -639,19 +530,19 @@ public class DBOperation {
 	 * @param hostID  主机ID
 	 * @return
 	 */
-	public  String[] judge(String userID) throws SQLException {
-		String result[] = new String[4];
+	public  String[] judge() throws SQLException {
+		String result[] = new String[2];
 		ResultSet rs = null;
 		Statement stmt = null;
 		stmt = con.createStatement();
 		//根据用户ID获得该用户的密码
-		String sql = "SELECT * FROM userinfo where userID= '"+userID+"'";
+		String sql = "SELECT pwd,userID  FROM userinfo where userID='hp'";
 		rs = stmt.executeQuery(sql);
+		
 		while(rs.next()) {
+			
 			result[0] = rs.getString("userID");
 			result[1] = rs.getString("pwd");
-			result[2] = rs.getString("time");
-			result[3] = rs.getString("random");		
 		}
 		
 		dbcManager.close();
@@ -703,6 +594,46 @@ public class DBOperation {
 		}
 		return flag;
 	}
+
+	/**@author WZY
+	 * 根据AgentIp得到服务器端与agent共享秘钥
+	 * @return
+	 */
+	public  String getAgentKey(String hostIP) throws SQLException {
+		String result[] = new String[1];
+		ResultSet rs = null;
+		Statement stmt = null;
+		stmt = con.createStatement();
+		//根据用户ID获得该用户的密码
+		String sql = "SELECT * FROM hostinfo where hostIP='"+hostIP+"'";
+		rs = stmt.executeQuery(sql);
+		
+		while(rs.next()) {			
+			result[0] = rs.getString("key");
+		}
+		
+		dbcManager.close();
+		if(rs!=null)
+		{
+			try{
+				rs.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return result[0];
+	}
+
 
 
 	public static void main(String[] args) {

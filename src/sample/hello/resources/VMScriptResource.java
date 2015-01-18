@@ -29,7 +29,7 @@ public class VMScriptResource {
 	@POST
 	@Path("/upload")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response uploadFile(@QueryParam("uid") String uid,
+	public Response uploadFile(
 			@FormDataParam("ip") List<String> ip,
 			@FormDataParam("upload") InputStream is,
 			@FormDataParam("upload") FormDataContentDisposition formData) {
@@ -43,7 +43,7 @@ public class VMScriptResource {
 			if(ip.size()==1){
 				JSONObject json = new JSONObject();
 				//如果发送给agent成功，返回操作id
-				int opID = vs.sendExeVmScriptMsg(uid, ip.get(0), f);		
+				int opID = vs.sendExeVmScriptMsg( ip.get(0), f);		
 				json.put("opID", opID);// 操作id
 				json.put("status", "the send script is already executing ");// 操作状态
 				res = Response.ok(json).build();
@@ -51,7 +51,7 @@ public class VMScriptResource {
 				JSONArray jarr = new JSONArray();
 				for(int i=0;i<ip.size();i++){
 					JSONObject json = new JSONObject();
-					int opID = vs.sendExeVmScriptMsg(uid, ip.get(i), f);
+					int opID = vs.sendExeVmScriptMsg( ip.get(i), f);
 					json.put("opID", opID);// 操作id
 					json.put("status", "the send script is already executing ");// 操作状态
 					jarr.put(json);

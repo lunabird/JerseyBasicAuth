@@ -12,6 +12,7 @@ import java.sql.SQLException;
 
 import sample.DBOP.DBOperation;
 
+import edu.xidian.enc.AESUtil;
 import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
@@ -34,20 +35,21 @@ public class VMScript {
 		return opID;
 	}
 	
-	public int sendExeVmScriptMsg(String uid, String ip, File file) {
+	public int sendExeVmScriptMsg( String ip, File file) {
 		int opID = insertEvent(ip);
 		try {
 			Socket socket = new Socket(ip, 9400);
-			Message msg = new Message(MsgType.executeVMScript, uid,
+			Message msg = new Message(MsgType.executeVMScript, opID+"",
 					file.getName());
-			// 加密
-			String datatemp = SerializeUtil.serialize(msg);
-			String str = MD5Util.convertMD5(datatemp);
-			// 传输
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
-			oos.writeObject(str);
-			oos.flush();
+			oos.writeObject(str);		
+			
+			
 			// 发送文件
 			System.out.println("文件长度为：" + file.length());
 			DataOutputStream dos = new DataOutputStream(
@@ -78,14 +80,24 @@ public class VMScript {
 			}
 			dos.flush();
 			System.out.println("传输完成");
-
-			// 获得反馈信息
+			
+			
+			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String) ois.readObject();
-			// 解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message) SerializeUtil.deserialize(str2);
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 		
+
+//			// 获得反馈信息
+//			ObjectInputStream ois = new ObjectInputStream(
+//					socket.getInputStream());
+//			str = (String) ois.readObject();
+//			// 解密
+//			String str2 = MD5Util.convertMD5(str);
+//			msg = (Message) SerializeUtil.deserialize(str2);
 			if (msg.getType().equals(MsgType.executeVMScript)) {
 				String ret = (String) msg.getValues();
 				if (ret.equals("success") || ret.equals("executing")) {
@@ -100,6 +112,9 @@ public class VMScript {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

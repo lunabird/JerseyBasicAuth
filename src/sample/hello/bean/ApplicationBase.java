@@ -11,6 +11,7 @@ import javax.ws.rs.QueryParam;
 
 import sample.DBOP.DBOperation;
 
+import edu.xidian.enc.AESUtil;
 import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
@@ -41,7 +42,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupTomcatMsg(String uid,String ip,String[] scIPAddr,String installPath,String jdkPath){
+	public int sendSetupTomcatMsg(String ip,String[] scIPAddr,String installPath,String jdkPath){
 		int opID = insertEvent(ip,"setupTomcat");
 		//发送Socket消息给Agent
 		try {
@@ -51,21 +52,22 @@ public class ApplicationBase {
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
 			values[3] = jdkPath;
-			Message msg = new Message(MsgType.setupTomcat, uid,values);
+			Message msg = new Message(MsgType.setupTomcat, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupTomcat)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -79,6 +81,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -91,7 +96,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupTomcatOnLinuxMsg(String uid,String ip,String[] scIPAddr,String installPath,String jdkName,String jdkPath){
+	public int sendSetupTomcatOnLinuxMsg(String ip,String[] scIPAddr,String installPath,String jdkName,String jdkPath){
 		int opID = insertEvent(ip,"setupTomcat");
 		//发送Socket消息给Agent
 		try {
@@ -102,21 +107,22 @@ public class ApplicationBase {
 			values[2] = installPath;
 			values[3] = jdkName;
 			values[4] = jdkPath;
-			Message msg = new Message(MsgType.setupTomcat, uid,values);
+			Message msg = new Message(MsgType.setupTomcat, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupTomcat)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -131,6 +137,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -142,7 +151,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupMySqlMsg(String uid,String ip,String[] scIPAddr,String installPath,String pswd){
+	public int sendSetupMySqlMsg(String ip,String[] scIPAddr,String installPath,String pswd){
 		int opID = insertEvent(ip,"setupMySql");
 		//发送Socket消息给Agent
 		try {
@@ -152,21 +161,22 @@ public class ApplicationBase {
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
 			values[3] = pswd;
-			Message msg = new Message(MsgType.setupMySql, uid,values);
+			Message msg = new Message(MsgType.setupMySql, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupMySql)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -180,6 +190,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -192,7 +205,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupMySqlOnLinuxMsg(String uid,String ip,String[] scIPAddr,String pswd){
+	public int sendSetupMySqlOnLinuxMsg(String ip,String[] scIPAddr,String pswd){
 		int opID = insertEvent(ip,"setupMySql");
 		//发送Socket消息给Agent
 		try {
@@ -203,21 +216,22 @@ public class ApplicationBase {
 			values[1] = scIPAddr[1];
 			values[2] = pswd;
 //			values[3] = pswd;
-			Message msg = new Message(MsgType.setupMySql, uid,values);
+			Message msg = new Message(MsgType.setupMySql, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupMySql)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -232,6 +246,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -243,7 +260,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupJdkMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupJdkMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupJdk");
 		//发送Socket消息给Agent
 		try {
@@ -252,21 +269,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupJdk, uid,values);
+			Message msg = new Message(MsgType.setupJdk, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupJdk)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -281,6 +299,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -292,7 +313,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupApacheMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupApacheMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupApache");
 		//发送Socket消息给Agent
 		try {
@@ -301,21 +322,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupApache, uid,values);
+			Message msg = new Message(MsgType.setupApache, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupApache)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -330,6 +352,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -341,7 +366,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupNginxMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupNginxMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupNginx");
 		//发送Socket消息给Agent
 		try {
@@ -350,22 +375,23 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupNginx, uid,values);
+			Message msg = new Message(MsgType.setupNginx, opID+"",values);
 			System.out.println("values:"+values[0]+","+values[1]+","+values[2]);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			/*ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(msg);
@@ -387,6 +413,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -398,7 +427,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupZendGuardLoaderMsg(String uid,String ip,String[] scIPAddr,String phpPath){
+	public int sendSetupZendGuardLoaderMsg(String ip,String[] scIPAddr,String phpPath){
 		int opID = insertEvent(ip,"setupZendGuardLoader");
 		//发送Socket消息给Agent
 		try {
@@ -407,21 +436,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[3] = phpPath;
-			Message msg = new Message(MsgType.setupZendGuardLoader, uid,values);
+			Message msg = new Message(MsgType.setupZendGuardLoader, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -435,6 +465,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -447,7 +480,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupZendGuardLoaderMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath,String phpPath){
+	public int sendSetupZendGuardLoaderMsgOnLinux(String ip,String[] scIPAddr,String installPath,String phpPath){
 		int opID = insertEvent(ip,"setupZendGuardLoader");
 		//发送Socket消息给Agent
 		try {
@@ -457,21 +490,22 @@ public class ApplicationBase {
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
 			values[3] = phpPath;
-			Message msg = new Message(MsgType.setupZendGuardLoader, uid,values);
+			Message msg = new Message(MsgType.setupZendGuardLoader, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -486,6 +520,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -497,7 +534,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupPythonMsg(String uid,String ip,String[] scIPAddr){
+	public int sendSetupPythonMsg(String ip,String[] scIPAddr){
 		int opID = insertEvent(ip,"setupPython");
 		//发送Socket消息给Agent
 		try {
@@ -505,21 +542,22 @@ public class ApplicationBase {
 			String[] values = new String[2];
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
-			Message msg = new Message(MsgType.setupPython, uid,values);
+			Message msg = new Message(MsgType.setupPython, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupPython)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -533,6 +571,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -545,7 +586,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupPythonMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupPythonMsgOnLinux(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupPython");
 		//发送Socket消息给Agent
 		try {
@@ -554,21 +595,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupPython, uid,values);
+			Message msg = new Message(MsgType.setupPython, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupPython)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -583,6 +625,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -594,7 +639,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupMemcachedMsg(String uid,String ip,String[] scIPAddr){
+	public int sendSetupMemcachedMsg(String ip,String[] scIPAddr){
 		int opID = insertEvent(ip,"setupMemcached");
 		//发送Socket消息给Agent
 		try {
@@ -603,21 +648,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			
-			Message msg = new Message(MsgType.setupMemcached, uid,values);
+			Message msg = new Message(MsgType.setupMemcached, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupMemcached)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -631,6 +677,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -643,7 +692,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupMemcachedMsgOnLinux(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupMemcachedMsgOnLinux(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupMemcached");
 		//发送Socket消息给Agent
 		try {
@@ -652,21 +701,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupMemcached, uid,values);
+			Message msg = new Message(MsgType.setupMemcached, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupMemcached)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -681,6 +731,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -692,7 +745,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupIISRewriteMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupIISRewriteMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupIISRewrite");
 		//发送Socket消息给Agent
 		try {
@@ -701,21 +754,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupIISRewrite, uid,values);
+			Message msg = new Message(MsgType.setupIISRewrite, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupIISRewrite)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -730,6 +784,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -741,7 +798,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupASPMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	/*public int sendSetupASPMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupASP");
 		//发送Socket消息给Agent
 		try {
@@ -750,21 +807,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupASP, uid,values);
+			Message msg = new Message(MsgType.setupASP, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupASP)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -781,7 +839,7 @@ public class ApplicationBase {
 			e.printStackTrace();
 		}
 		return opID;
-	}
+	}*/
 	/**
 	 * 安装FTP
 	 * @param uid
@@ -790,7 +848,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupFTPMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupFTPMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupFTP");
 		//发送Socket消息给Agent
 		try {
@@ -799,21 +857,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupFTP, uid,values);
+			Message msg = new Message(MsgType.setupFTP, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupFTP)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -827,6 +886,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -839,7 +901,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupFTPMsgOnLinux(String uid,String ip,String[] scIPAddr){
+	public int sendSetupFTPMsgOnLinux(String ip,String[] scIPAddr){
 		int opID = insertEvent(ip,"setupFTP");
 		//发送Socket消息给Agent
 		try {
@@ -847,21 +909,22 @@ public class ApplicationBase {
 //			String[] values = new String[3];
 //			values[0] = scIPAddr[0];
 //			values[1] = scIPAddr[1];
-			Message msg = new Message(MsgType.setupFTP, uid,null);
+			Message msg = new Message(MsgType.setupFTP, opID+"",null);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupFTP)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -876,6 +939,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -887,7 +953,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupASPNETMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	/*public int sendSetupASPNETMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupASPNET");
 		//发送Socket消息给Agent
 		try {
@@ -896,21 +962,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupASPNET, uid,values);
+			Message msg = new Message(MsgType.setupASPNET, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupASPNET)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -927,7 +994,7 @@ public class ApplicationBase {
 			e.printStackTrace();
 		}
 		return opID;
-	}
+	}*/
 	/**
 	 * 安装SQLServer2008R2
 	 * @param uid
@@ -939,7 +1006,7 @@ public class ApplicationBase {
 	 * @param userName
 	 * @return
 	 */
-	public int sendSetupSQLServer2008R2Msg(String uid,String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
+	public int sendSetupSQLServer2008R2Msg(String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
 		int opID = insertEvent(ip,"setupSQLServer2008R2");
 		//发送Socket消息给Agent
 		try {
@@ -951,21 +1018,22 @@ public class ApplicationBase {
 			values[3] = rootPswd;
 			values[4] = hostName;
 			values[5] = userName;
-			Message msg = new Message(MsgType.setupSQLServer2008R2, uid,values);
+			Message msg = new Message(MsgType.setupSQLServer2008R2, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupSQLServer2008R2)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -980,6 +1048,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -991,7 +1062,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupSQLServer2000Msg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupSQLServer2000Msg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupSQLServer2000");
 		//发送Socket消息给Agent
 		try {
@@ -1000,21 +1071,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupSQLServer2000, uid,values);
+			Message msg = new Message(MsgType.setupSQLServer2000, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupSQLServer2000)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -1029,6 +1101,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -1040,7 +1115,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupOracle10gMsg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetupOracle10gMsg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setupOracle10g");
 		//发送Socket消息给Agent
 		try {
@@ -1049,21 +1124,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setupOracle10g, uid,values);
+			Message msg = new Message(MsgType.setupOracle10g, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupOracle10g)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -1077,6 +1153,9 @@ public class ApplicationBase {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return opID;
@@ -1093,7 +1172,7 @@ public class ApplicationBase {
 	 * @param rootPswd
 	 * @return
 	 */
-	public int sendSetupOracle11gMsg(String uid,String ip,String[] scIPAddr,String hostname,String inventorypath,
+	public int sendSetupOracle11gMsg(String ip,String[] scIPAddr,String hostname,String inventorypath,
 			String oraclebase,String oraclehome, String rootPswd){
 		int opID = insertEvent(ip,"setupOracle11g");
 		//发送Socket消息给Agent
@@ -1107,21 +1186,22 @@ public class ApplicationBase {
 			values[4] = oraclebase;
 			values[5] = oraclehome;
 			values[6] = rootPswd;
-			Message msg = new Message(MsgType.setupOracle11g, uid,values);
+			Message msg = new Message(MsgType.setupOracle11g, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setupOracle11g)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -1136,6 +1216,9 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
@@ -1147,7 +1230,7 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetup360Msg(String uid,String ip,String[] scIPAddr,String installPath){
+	public int sendSetup360Msg(String ip,String[] scIPAddr,String installPath){
 		int opID = insertEvent(ip,"setup360");
 		//发送Socket消息给Agent
 		try {
@@ -1156,21 +1239,22 @@ public class ApplicationBase {
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
-			Message msg = new Message(MsgType.setup360, uid,values);
+			Message msg = new Message(MsgType.setup360, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
 			//获得反馈信息
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
-			str = (String)ois.readObject();
+			byte[] rcvstr = (byte[])ois.readObject();
 			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			msg = (Message)SerializeUtil.deserialize(str1); 
 			if (msg.getType().equals(MsgType.setup360)) {
 				String ret = (String)msg.getValues();
 				if(ret.equals("success")||ret.equals("executing")){
@@ -1185,47 +1269,11 @@ public class ApplicationBase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return opID;
 	}
 	
-	public String sendGetStatusMsg(String uid,String ip,String softwareName){
-		//发送Socket消息给Agent
-		try {
-			Socket socket = new Socket(ip, 9100);
-			String[] values = new String[1];
-			values[0] = softwareName;
-			Message msg = new Message(MsgType.setup360, uid,values);
-			//加密
-			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
-			ObjectOutputStream oos = new ObjectOutputStream(
-					socket.getOutputStream());
-			oos.writeObject(str);
-			//获得反馈信息
-			ObjectInputStream ois = new ObjectInputStream(
-					socket.getInputStream());
-			str = (String)ois.readObject();
-			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); 
-			if (msg.getType().equals(MsgType.setup360)) {
-				String ret = (String)msg.getValues();
-//				if(ret.equals("success")||ret.equals("executing")){
-//					return opID;
-//				}
-				System.out.println(ret);
-				return ret;
-			}
-			socket.close();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "cannot get status of "+softwareName;
-	}
 }

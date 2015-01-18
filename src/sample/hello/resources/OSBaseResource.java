@@ -18,12 +18,6 @@ import sample.hello.bean.OSBase;
 
 @Path("/OSBase")
 public class OSBaseResource {
-//	@Context
-//	UriInfo uriInfo;
-//	@Context
-//	Request request;
-	
-	
 	/**
 	 * 修改操作系统密码
 	 * @param uid
@@ -36,7 +30,7 @@ public class OSBaseResource {
 	@Path("/vmSysPwd")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changePasswd(@QueryParam("uid") String uid,
+	public Response changePasswd(
 			@QueryParam("ip") String ip,
 			@QueryParam("userName") String userName,
 			@QueryParam("passwd") String passwd) {
@@ -44,13 +38,10 @@ public class OSBaseResource {
 		JSONObject entity = new JSONObject();
 		OSBase ob = new OSBase();
 		try {
-			if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
-				entity.put("response", "change passwd success");
-				res = Response.ok(entity).build();
-			} else {
-				entity.put("response", "change passwd failed");
-				res = Response.ok(entity).build();
-			}
+//			String result = ob.sendChangePasswdMsg(ip, userName, passwd);
+//			entity.put("response",result);
+			entity.put("response","OKOKOKOK");
+			res = Response.ok(entity).build();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,7 +53,7 @@ public class OSBaseResource {
 	@Path("/vmSysPwd_json")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changePasswd_json(@QueryParam("uid") String uid, String json) {
+	public Response changePasswd_json( String json) {
 		Response res = null;
 		try {
 			JSONObject o = new JSONObject(json);
@@ -74,14 +65,9 @@ public class OSBaseResource {
 			String passwd = (String) o.get("passwd");
 			JSONObject entity = new JSONObject();
 			OSBase ob = new OSBase();
-			if (ob.sendChangePasswdMsg(uid, ip, userName, passwd)) {
-//				res =  Response.ok("change passwd success").build();
-				entity.put("response", "change passwd success");
-				res = Response.ok(entity).build();
-			} else {
-				entity.put("response", "change passwd failed");
-				res =  Response.ok(entity).build();
-			}
+			String result = ob.sendChangePasswdMsg(ip, userName, passwd);
+			entity.put("response",result);
+			res =  Response.ok(entity).build();
 			return res;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -89,21 +75,21 @@ public class OSBaseResource {
 		}
 		return res;
 	}
-	@PUT
-	@Path("/sysService")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSysService(){
-		Response res;
-		OSBase ob = new OSBase();
-		if (true) {
-			res =  Response.ok("success").build();
-		} else {
-			res =  Response.ok("failed").build();
-		}
-		return res;
-		
-	}
+//	@PUT
+//	@Path("/sysService")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public Response getSysService(){
+//		Response res;
+//		OSBase ob = new OSBase();
+//		if (true) {
+//			res =  Response.ok("success").build();
+//		} else {
+//			res =  Response.ok("failed").build();
+//		}
+//		return res;
+//		
+//	}
 	
 	
 	/**
@@ -113,31 +99,23 @@ public class OSBaseResource {
 	 * @param serviceName
 	 * @param operation
 	 * @return
+	 * @throws JSONException 
 	 * 
 	 */
 	@PUT
 	@Path("/sysServiceConfig")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response startOrStopService(@QueryParam("uid") String uid,
+	public Response startOrStopService(
 			@QueryParam("ip") String ip,
 			@QueryParam("serviceName") String serviceName,
-			@QueryParam("operation") String operation) {
+			@QueryParam("operation") String operation) throws JSONException {
 		Response res = null;
 		OSBase ob = new OSBase();
-		if(ob.sendchgSysServiceStateMsg(uid, ip, serviceName, operation)){
-			if(operation.equals("start")){
-				res = Response.ok("start service success").build();
-			}else if(operation.equals("stop")){
-				res = Response.ok("stop service success").build();
-			}			
-		}else{
-			if(operation.equals("start")){
-				res = Response.ok("start service failed").build();
-			}else if(operation.equals("stop")){
-				res = Response.ok("stop service failed").build();
-			}
-		}
+		JSONObject entity = new JSONObject();
+		String result = ob.sendchgSysServiceStateMsg(ip, serviceName, operation);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	/**
@@ -150,11 +128,11 @@ public class OSBaseResource {
 	@GET
 	@Path("/sysLog")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response viewLog(@QueryParam("uid") String uid,
+	public Response viewLog(
 			@QueryParam("ip") String ip, 
 			@QueryParam("logType") String logType) {
 		OSBase ob = new OSBase();
-		JSONObject o = ob.sendViewSysLogMsg(uid, ip, logType);
+		JSONObject o = ob.sendViewSysLogMsg(ip, logType);
 		if(o!=null){
 			return Response.ok(o, MediaType.APPLICATION_JSON).build();
 		}
@@ -165,24 +143,22 @@ public class OSBaseResource {
 	@Path("/IPAdd")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeIP(@QueryParam("uid") String uid,
+	public Response changeIP(
 			@QueryParam("ip") String ip, 
 			@QueryParam("mac") String mac,
 			@QueryParam("changeToIP") String changeToIP,
 			@QueryParam("mask") String mask,
 			@QueryParam("gateway") String gateway,
 			@QueryParam("dns") List<String> dns
-			){
+			) throws JSONException{
 		
-		Response res;
+		Response res = null;
 		OSBase ob = new OSBase();
+		JSONObject entity = new JSONObject();
 		String[] dnsArr = (String[])dns.toArray(new String[dns.size()]);
-		if (ob.sendChangeIPMsg(uid, ip, mac,changeToIP,mask, gateway,dnsArr)) {
-			res =  Response.ok("change IP success").build();
-		} else {
-			res =  Response.ok("change IP failed").build();
-		}
-		
+		String result = ob.sendChangeIPMsg(ip, mac,changeToIP,mask, gateway,dnsArr);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	/**
@@ -196,26 +172,25 @@ public class OSBaseResource {
 	 * @param affiIp
 	 * @param affiMask
 	 * @return
+	 * @throws JSONException 
 	 */
 	@PUT
 	@Path("/IPAdd_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeIPOnLinux(@QueryParam("uid") String uid,
+	public Response changeIPOnLinux(
 			@QueryParam("ip") String ip, 
 			@QueryParam("deviceName") String deviceName,
 			@QueryParam("mask") String mask,
 			@QueryParam("changeToIP") String changeToIP
-			){
+			) throws JSONException{
 		
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendChangeIPOnLinuxMsg(uid, ip, deviceName,mask, changeToIP)) {
-			res =  Response.ok("change IP success").build();
-		} else {
-			res =  Response.ok("change IP failed").build();
-		}
-		
+		JSONObject entity = new JSONObject();
+		String result = ob.sendChangeIPOnLinuxMsg(ip, deviceName,mask, changeToIP);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	/**
@@ -229,27 +204,27 @@ public class OSBaseResource {
 	 * @param affiIP
 	 * @param affiMask
 	 * @return
+	 * @throws JSONException 
 	 */
 	@PUT
 	@Path("/affiIPAdd")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeAffiIP(@QueryParam("uid") String uid,
+	public Response changeAffiIP(
 			@QueryParam("ip") String ip, 
 			@QueryParam("mac") String mac,
 			@QueryParam("affiIp") List<String> affiIP, 
 			@QueryParam("affiMask") List<String> affiMask,
-			@QueryParam("affiGateway") List<String> affiGateway){
+			@QueryParam("affiGateway") List<String> affiGateway) throws JSONException{
 		Response res;
 		OSBase ob = new OSBase();
+		JSONObject entity = new JSONObject();
 		String[] affiIPArr = (String[])affiIP.toArray(new String[affiIP.size()]);
 		String[] affiMaskArr = (String[])affiMask.toArray(new String[affiMask.size()]);
 		String[] affiGatewayArr = (String[])affiGateway.toArray(new String[affiGateway.size()]);
-		if(ob.sendChangeAffiIPMsg(uid, ip, mac,  affiIPArr, affiMaskArr, affiGatewayArr)){
-			res =  Response.ok("change windows affi IP success").build();
-		} else {
-			res =  Response.ok("change windows affi IP failed").build();
-		}
+		String result = ob.sendChangeAffiIPMsg(ip, mac,  affiIPArr, affiMaskArr, affiGatewayArr);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	
@@ -261,92 +236,86 @@ public class OSBaseResource {
 	 * @param mask
 	 * @param changeToIP
 	 * @return
+	 * @throws JSONException 
 	 */
 	@PUT
 	@Path("/affiIPAdd_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeAffiIPOnLinux(@QueryParam("uid") String uid,
+	public Response changeAffiIPOnLinux(
 			@QueryParam("ip") String ip, 
 			@QueryParam("deviceName") String deviceName,
 			@QueryParam("mask") String mask,
-			@QueryParam("changeToIP") String changeToIP){
+			@QueryParam("changeToIP") String changeToIP) throws JSONException{
 		Response res;
 		OSBase ob = new OSBase();
-		
-		if(ob.sendChangeAffiIPOnLinuxMsg(uid, ip,deviceName, mask,changeToIP)){
-			res =  Response.ok("change linux affi IP success").build();
-		} else {
-			res =  Response.ok("change linux affi IP failed").build();
-		}
-		
+		JSONObject entity = new JSONObject();
+		String result = ob.sendChangeAffiIPOnLinuxMsg(ip,deviceName, mask,changeToIP);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	@PUT
 	@Path("/disk")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeAffiIP(@QueryParam("uid") String uid,@QueryParam("ip") String ip){
+	public Response changeAffiIP(@QueryParam("ip") String ip) throws JSONException{
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendDiskFormatMsg(uid, ip)) {
-			res =  Response.ok("disk format success").build();
-		} else {
-			res =  Response.ok("diak format failed").build();
-		}
+		JSONObject entity = new JSONObject();
+		String result = ob.sendDiskFormatMsg(ip);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	@PUT
 	@Path("/secRule")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeSecRules(@QueryParam("uid") String uid,
+	public Response changeSecRules(
 			@QueryParam("ip") String ip,
 			@QueryParam("policyName") String policyName,
 			@QueryParam("protocol") String protocol,
 			@QueryParam("port") String port,
-			@QueryParam("addSecIP") String addSecIP) {
+			@QueryParam("addSecIP") String addSecIP) throws JSONException {
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendChangeSecRuleMsg(uid, ip, policyName, protocol, port, addSecIP)) {
-			res =  Response.ok("change security rule success").build();
-		} else {
-			res =  Response.ok("change security rule failed").build();
-		}
+		JSONObject entity = new JSONObject();
+		String result =ob.sendChangeSecRuleMsg(ip, policyName, protocol, port, addSecIP);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	@PUT
 	@Path("/secRule_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeSecRulesOnLinux(@QueryParam("uid") String uid,
+	public Response changeSecRulesOnLinux(
 			@QueryParam("ip") String ip,
 			@QueryParam("protocol") String protocol,
 			@QueryParam("sourceIP") String sourceIP,
-			@QueryParam("port") String port) {
+			@QueryParam("port") String port) throws JSONException {
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendChangeSecRuleOnLinuxMsg(uid, ip, protocol,sourceIP, port)) {
-			res =  Response.ok("change security rule on linux success").build();
-		} else {
-			res =  Response.ok("change security rule on linux failed").build();
-		}
+		JSONObject entity = new JSONObject();
+		String result = ob.sendChangeSecRuleOnLinuxMsg(ip, protocol,sourceIP, port);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 	@PUT
 	@Path("/ulimit_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeUlimitOnLinux(@QueryParam("uid") String uid,
+	public Response changeUlimitOnLinux(
 			@QueryParam("ip") String ip,
-			@QueryParam("ulimit") String ulimit) {
+			@QueryParam("ulimit") String ulimit) throws JSONException {
 		Response res;
 		OSBase ob = new OSBase();
-		if (ob.sendChangeUlimitOnLinuxMsg(uid, ip, ulimit)) {
-			res =  Response.ok("change ulimit success").build();
-		} else {
-			res =  Response.ok("change ulimit failed").build();
-		}
+		JSONObject entity = new JSONObject();
+		String result = ob.sendChangeUlimitOnLinuxMsg(ip, ulimit);
+		entity.put("response",result);
+		res =  Response.ok(entity).build();
 		return res;
 	}
 }
