@@ -30,7 +30,7 @@ public class AuthFilter implements ContainerRequestFilter {
 	@SuppressWarnings("null")
 	public ContainerRequest filter(ContainerRequest containerRequest) {
 		//GET, POST, PUT, DELETE, ...
-		System.out.println("==================");
+//		System.out.println("==================");
 		String method = containerRequest.getMethod();
 		// myresource/get/56bCA for example
 		String path = containerRequest.getPath(true);
@@ -54,11 +54,10 @@ public class AuthFilter implements ContainerRequestFilter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		int minutes = (int)(d2.getTime()-d3.getTime())/1000/60;
 		//判断客户端发送时间与服务端接收时间间隔
-		if(minutes>5){
-			System.out.println("time out");//时间超时
+		if(minutes>60){
+			System.out.println("##### request time out ! #####");//时间超时
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}else{
 			DBOperation opt = new DBOperation();
@@ -67,8 +66,8 @@ public class AuthFilter implements ContainerRequestFilter {
 			try {
 				pwd = opt.judge()[1];
 				userId = opt.judge()[0];
-				System.out.println(pwd+"----");
-				System.out.println(password+"----");
+//				System.out.println(pwd+"----");
+//				System.out.println(password+"----");
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -76,12 +75,12 @@ public class AuthFilter implements ContainerRequestFilter {
 			//判断秘钥是否匹配
 			
 			if(!pwd.equals(password)){
-				System.out.println("password error");
+				System.out.println("##### password error ! #####");
 				throw new WebApplicationException(Status.UNAUTHORIZED);
 			}else{
-				System.out.println("original containerRequest:"+containerRequest.getRequestUri());
-				containerRequest.setUris(containerRequest.getBaseUri(), containerRequest.getRequestUriBuilder().queryParam("uid", userId).build());
-				System.out.println("containerRequest append uid:"+containerRequest.getRequestUri());
+//				System.out.println("original containerRequest:"+containerRequest.getRequestUri());
+//				containerRequest.setUris(containerRequest.getBaseUri(), containerRequest.getRequestUriBuilder().queryParam("uid", userId).build());
+//				System.out.println("containerRequest append uid:"+containerRequest.getRequestUri());
 				return containerRequest;
 			}
 		}

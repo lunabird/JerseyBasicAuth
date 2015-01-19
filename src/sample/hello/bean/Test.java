@@ -11,6 +11,7 @@ import edu.xidian.message.MsgType;
 
 public class Test {
 	public static void main(String[] args) {
+		System.out.println( ("setup-Tomcat").split("-")[1]);
 		/*try {
 			Socket socket = new Socket("127.0.0.1", 9000);
 			String[] values=new String[2];

@@ -54,19 +54,26 @@ public class AESUtil {
                 byte[] result = cipher.doFinal(byteContent);  
                 return result; // º”√‹  
         } catch (NoSuchAlgorithmException e) {  
-                e.printStackTrace();  
-        } catch (NoSuchPaddingException e) {  
-                e.printStackTrace();  
-        } catch (InvalidKeyException e) {  
-                e.printStackTrace();  
-        } catch (UnsupportedEncodingException e) {  
-                e.printStackTrace();  
-        } catch (IllegalBlockSizeException e) {  
-                e.printStackTrace();  
-        } catch (BadPaddingException e) {  
-                e.printStackTrace();  
-        }  
-        return null;  
+            e.printStackTrace(); 
+            return "NoSuchAlgorithmException".getBytes();
+    } catch (NoSuchPaddingException e) {  
+            e.printStackTrace();  
+            return "NoSuchPaddingException".getBytes();
+    } catch (InvalidKeyException e) {  
+            e.printStackTrace();  
+            return "InvalidKeyException".getBytes();
+    } catch (IllegalBlockSizeException e) {  
+            e.printStackTrace();  
+            return "IllegalBlockSizeException".getBytes();
+    } catch (BadPaddingException e) {  
+            e.printStackTrace(); 
+            return "BadPaddingException".getBytes();
+    } catch (UnsupportedEncodingException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		return "UnsupportedEncodingException".getBytes();
+	}  
+  
 } 
 	
 	/**@author WZY

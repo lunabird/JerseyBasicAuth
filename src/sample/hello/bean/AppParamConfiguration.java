@@ -62,7 +62,7 @@ public class AppParamConfiguration {
 	 */
 	public String sendConfigMySqlMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configMySql");
+		int opID = insertEvent(ip,"config-MySql");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -85,14 +85,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configMySql)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x320")) {
-					updateOpStatus(opID,"0x320");
-					return "0x320";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configMySql)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300200")) {
+						updateOpStatus(opID, "0x0300200");
+						return "0x0300200";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -105,13 +109,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x321");
-		return "0x321";
+		updateOpStatus(opID,"0x0300201");
+		return "0x0300201";
 	}
 
 	public String sendConfigTomcatMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configTomcat");
+		int opID = insertEvent(ip,"config-Tomcat");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -134,12 +138,16 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configTomcat)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x300")) {
-					updateOpStatus(opID,"0x300");
-					return "0x300";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configTomcat)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300000")) {
+						updateOpStatus(opID, "0x0300000");
+						return "0x0300000";
+					}
 				}
 			}
 			socket.close();
@@ -153,13 +161,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x301");
-		return "0x301";
+		updateOpStatus(opID,"0x0300001");
+		return "0x0300001";
 	}
 
 	public String sendConfigJdkMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configJdk");
+		int opID = insertEvent(ip,"config-Jdk");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -182,12 +190,16 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configJdk)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x310")) {
-					updateOpStatus(opID,"0x310");
-					return "0x310";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configJdk)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300100")) {
+						updateOpStatus(opID, "0x0300100");
+						return "0x0300100";
+					}
 				}
 			}
 			socket.close();
@@ -201,13 +213,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x311");
-		return "0x311";
+		updateOpStatus(opID,"0x0300101");
+		return "0x0300101";
 	}
 
 	public String sendConfigApacheMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configApache");
+		int opID = insertEvent(ip,"config-Apache");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -230,14 +242,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configApache)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x330")) {
-					updateOpStatus(opID,"0x330");
-					return "0x330";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configApache)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300300")) {
+						updateOpStatus(opID, "0x0300300");
+						return "0x0300300";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -250,13 +266,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x331");
-		return "0x331";
+		updateOpStatus(opID,"0x0300301");
+		return "0x0300301";
 	}
 
 	public String sendConfigNginxMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configNginx");
+		int opID = insertEvent(ip,"config-Nginx");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -280,21 +296,25 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			/*ObjectOutputStream oos = new ObjectOutputStream(
-					socket.getOutputStream());
-			oos.writeObject(msg);
-			ObjectInputStream ois = new ObjectInputStream(
-					socket.getInputStream());
-			msg = (Message) ois.readObject();*/
-			
-			if (msg.getType().equals(MsgType.configNginx)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x340")) {
-					updateOpStatus(opID,"0x340");
-					return "0x340";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				/*
+				 * ObjectOutputStream oos = new ObjectOutputStream(
+				 * socket.getOutputStream()); oos.writeObject(msg);
+				 * ObjectInputStream ois = new ObjectInputStream(
+				 * socket.getInputStream()); msg = (Message) ois.readObject();
+				 */
+
+				if (msg.getType().equals(MsgType.configNginx)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300400")) {
+						updateOpStatus(opID, "0x0300400");
+						return "0x0300400";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -307,13 +327,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x341");
-		return "0x341";
+		updateOpStatus(opID,"0x0300401");
+		return "0x0300401";
 	}
 
 	public String sendConfigZendGuardLoaderMsg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configZendGuardLoader");
+		int opID = insertEvent(ip,"config-ZendGuardLoader");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -336,12 +356,16 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configZendGuardLoader)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x350")) {
-					updateOpStatus(opID,"0x350");
-					return "0x350";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configZendGuardLoader)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300500")) {
+						updateOpStatus(opID, "0x0300500");
+						return "0x0300500";
+					}
 				}
 			}
 			socket.close();
@@ -355,13 +379,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x351");
-		return "0x351";
+		updateOpStatus(opID,"0x0300501");
+		return "0x0300501";
 	}
 
 	public String sendConfigPythonMsg(String ip, String cfgFilePath,String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configPython");
+		int opID = insertEvent(ip,"config-Python");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -384,14 +408,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configPython)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x360")) {
-					updateOpStatus(opID,"0x360");
-					return "0x360";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configPython)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300600")) {
+						updateOpStatus(opID, "0x0300600");
+						return "0x0300600";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -404,13 +432,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x361");
-		return "0x361";
+		updateOpStatus(opID,"0x0300601");
+		return "0x0300601";
 	}
 
 	public String sendConfigMemcachedMsg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configMemcached");
+		int opID = insertEvent(ip,"config-Memcached");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -433,12 +461,16 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configMemcached)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x370")) {
-					updateOpStatus(opID,"0x370");
-					return "0x370";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configMemcached)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300700")) {
+						updateOpStatus(opID, "0x0300700");
+						return "0x0300700";
+					}
 				}
 			}
 			socket.close();
@@ -452,13 +484,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x371");
-		return "0x371";
+		updateOpStatus(opID,"0x0300701");
+		return "0x0300701";
 	}
 
 	public String sendConfigIISRewriteMsg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configIISRewrite");
+		int opID = insertEvent(ip,"config-IISRewrite");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -481,14 +513,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configIISRewrite)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x380")) {
-					updateOpStatus(opID,"0x380");
-					return "0x380";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configIISRewrite)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300800")) {
+						updateOpStatus(opID, "0x0300800");
+						return "0x0300800";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -501,13 +537,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x381");
-		return "0x381";
+		updateOpStatus(opID,"0x0300801");
+		return "0x0300801";
 	}
 
 	/*public String sendConfigASPMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configASP");
+		int opID = insertEvent(ip,"config-ASP");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -536,7 +572,7 @@ public class AppParamConfiguration {
 				updateOpStatus(opID,"0x300");
 					return true;
 				}
-				System.out.println(ret);
+				
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -551,7 +587,7 @@ public class AppParamConfiguration {
 
 	public String sendConfigFTPMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configFTP");
+		int opID = insertEvent(ip,"config-FTP");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -574,14 +610,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configFTP)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x390")) {
-					updateOpStatus(opID,"0x390");
-					return "0x390";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configFTP)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300900")) {
+						updateOpStatus(opID, "0x0300900");
+						return "0x0300900";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -594,13 +634,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x391");
-		return "0x391";
+		updateOpStatus(opID,"0x0300901");
+		return "0x0300901";
 	}
 
 	/*public String sendConfigASPNETMsg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"configASPNET");
+		int opID = insertEvent(ip,"config-ASPNET");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -629,7 +669,7 @@ public class AppParamConfiguration {
 				updateOpStatus(opID,"0x300");
 					return true;
 				}
-				System.out.println(ret);
+				
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -644,7 +684,7 @@ public class AppParamConfiguration {
 
 	public String sendConfigSQLServer2008R2Msg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configSQLServer2008R2");
+		int opID = insertEvent(ip,"config-SQLServer2008R2");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -667,12 +707,16 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configSQLServer2008R2)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x3A0")) {
-					updateOpStatus(opID,"0x3A0");
-					return "0x3A0";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configSQLServer2008R2)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300A00")) {
+						updateOpStatus(opID, "0x0300A00");
+						return "0x0300A00";
+					}
 				}
 			}
 			socket.close();
@@ -686,13 +730,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x3A1");
-		return "0x3A1";
+		updateOpStatus(opID,"0x0300A01");
+		return "0x0300A01";
 	}
 
 	public String sendConfigSQLServer2000Msg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configSQLServer2000");
+		int opID = insertEvent(ip,"config-SQLServer2000");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -715,14 +759,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configSQLServer2000)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x3B0")) {
-					updateOpStatus(opID,"0x3B0");
-					return "0x3B0";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configSQLServer2000)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300B00")) {
+						updateOpStatus(opID, "0x0300B00");
+						return "0x0300B00";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -735,13 +783,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x3B1");
-		return "0x3B1";
+		updateOpStatus(opID,"0x0300B01");
+		return "0x0300B01";
 	}
 
 	public String sendConfigOracle10gMsg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configOracle10g");
+		int opID = insertEvent(ip,"config-Oracle10g");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -764,14 +812,18 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configOracle10g)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x3D0")) {
-					updateOpStatus(opID,"0x3D0");
-					return "0x3D0";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configOracle10g)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300D00")) {
+						updateOpStatus(opID, "0x0300D00");
+						return "0x0300D00";
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -784,13 +836,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x3D1");
-		return "0x3D1";
+		updateOpStatus(opID,"0x0300D01");
+		return "0x0300D01";
 	}
 
 	public String sendConfigOracle11gMsg(String ip,String cfgFilePath,
 			String paramName, String paramValue) {
-		int opID = insertEvent(ip,"configOracle11g");
+		int opID = insertEvent(ip,"config-Oracle11g");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -813,14 +865,17 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.configOracle11g)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x3C0")) {
-					updateOpStatus(opID,"0x3C0");
-					return "0x3C0";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.configOracle11g)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300C00")) {
+						updateOpStatus(opID, "0x0300C00");
+						return "0x0300C00";
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -833,13 +888,13 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x3C1");
-		return "0x3C1";
+		updateOpStatus(opID,"0x0300C01");
+		return "0x0300C01";
 	}
 
 	public String sendConfig360Msg(String ip,String cfgFilePath, String paramName,
 			String paramValue) {
-		int opID = insertEvent(ip,"config360");
+		int opID = insertEvent(ip,"config-360");
 		// 发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9200);
@@ -862,12 +917,16 @@ public class AppParamConfiguration {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.config360)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("0x3E0")) {
-					updateOpStatus(opID,"0x3E0");
-					return "0x3E0";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.config360)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0300E00")) {
+						updateOpStatus(opID, "0x0300E00");
+						return "0x0300E00";
+					}
 				}
 			}
 			socket.close();
@@ -881,7 +940,7 @@ public class AppParamConfiguration {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x3E1");
-		return "0x3E1";
+		updateOpStatus(opID,"0x0300E01");
+		return "0x0300E01";
 	}
 }

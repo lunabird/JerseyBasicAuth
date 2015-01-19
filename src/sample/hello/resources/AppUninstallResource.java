@@ -21,10 +21,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallMySql(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath,
-			@QueryParam("rootPswd") String rootPswd
-			) {
+			@QueryParam("ip") String ip) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();
 		JSONObject entity = new JSONObject();//表示要给用户返回的json对象
@@ -34,7 +31,7 @@ public class AppUninstallResource {
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip, "mysql");
 			//将消息发送给Agent成功以后，返回一个代表操作id的代号eid，同时这也是数据库中存储的代表该操作的eid
-			int eid = a.sendUninstallMySqlMsg( ip, scIPAddr, installPath,rootPswd);
+			int eid = a.sendUninstallMySqlMsg( ip);
 			//构造要返回给用户的json对象
 			entity.put("eid", eid);
 			entity.put("status", "uninstall mysql has already been executing ");//
@@ -53,8 +50,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallMySqlOnLinux(
-			@QueryParam("ip") String ip,
-			@QueryParam("rootPswd") String rootPswd
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();
@@ -63,7 +59,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip, "mysql");
-			int eid = a.sendUninstallMySqlOnLinuxMsg( ip, scIPAddr, rootPswd);
+			int eid = a.sendUninstallMySqlOnLinuxMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall mysql has already been executing ");
 			res = Response.ok(entity).build();
@@ -81,9 +77,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallTomcat(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath,
-			@QueryParam("jdkPath") String jdkPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();
@@ -92,7 +86,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"tomcat");
-			int eid = a.sendUninstallTomcatMsg( ip, scIPAddr, installPath,jdkPath);
+			int eid = a.sendUninstallTomcatMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall tomcat has already been executing ");
 			res = Response.ok(entity).build();
@@ -110,10 +104,7 @@ public class AppUninstallResource {
 //	@Consumes(MediaType.APPLICATION_JSON)
 //	@Produces(MediaType.APPLICATION_JSON)
 //	public Response uninstallTomcatOnLinux( 
-//			@QueryParam("ip") String ip,
-//			@QueryParam("installPath") String installPath,
-//			@QueryParam("jdkName") String jdkName,
-//			@QueryParam("jdkPath") String jdkPath
+//			@QueryParam("ip") String ip
 //			) {
 //		Response res = null;
 //		ApplicationUninstallBase a = new ApplicationUninstallBase();
@@ -137,8 +128,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallJdk(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -146,7 +136,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"jdk");
-			int eid = a.sendUninstallJdkMsg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallJdkMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall jdk has already been executing ");
 			res = Response.ok(entity).build();
@@ -164,8 +154,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallApache(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -173,7 +162,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"apache");
-			int eid = a.sendUninstallApacheMsg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallApacheMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall Apache has already been executing ");
 			res = Response.ok(entity).build();
@@ -192,8 +181,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallNginx(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -201,7 +189,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP( "hp",ip,"nginx");
-			int eid = a.sendUninstallNginxMsg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallNginxMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "install Nginx has already been executing ");
 			res = Response.ok(entity).build();
@@ -220,8 +208,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response installZendGuardLoader(
-			@QueryParam("ip") String ip,
-			@QueryParam("phpPath") String phpPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -229,7 +216,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"zendguardloader");
-			int eid = a.sendUninstallZendGuardLoaderMsg( ip, scIPAddr,phpPath);
+			int eid = a.sendUninstallZendGuardLoaderMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall ZendGuardLoader has already been executing ");
 			res = Response.ok(entity).build();
@@ -247,9 +234,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallZendGuardLoader_Linux(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath,
-			@QueryParam("phpPath") String phpPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -257,7 +242,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"zendguardloader");
-			int eid = a.sendUninstallZendGuardLoaderMsgOnLinux( ip, scIPAddr,installPath,phpPath);
+			int eid = a.sendUninstallZendGuardLoaderMsgOnLinux( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall ZendGuardLoader has already been executing ");
 			res = Response.ok(entity).build();
@@ -283,7 +268,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"python");
-			int eid = a.sendUninstallPythonMsg( ip, scIPAddr);
+			int eid = a.sendUninstallPythonMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall python has already been executing ");
 			res = Response.ok(entity).build();
@@ -300,9 +285,8 @@ public class AppUninstallResource {
 	@Path("/Python_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uninstallPython(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+	public Response uninstallPythonL(
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -310,7 +294,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"python");
-			int eid = a.sendUninstallPythonMsgOnLinux( ip, scIPAddr,installPath);
+			int eid = a.sendUninstallPythonMsgOnLinux( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall python has already been executing ");
 			res = Response.ok(entity).build();
@@ -336,7 +320,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"memcached");
-			int eid = a.sendUninstallMemcachedMsg( ip, scIPAddr);
+			int eid = a.sendUninstallMemcachedMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall memcached has already been executing ");
 			res = Response.ok(entity).build();
@@ -353,9 +337,8 @@ public class AppUninstallResource {
 	@Path("/Memcached_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uninstallMemcached(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+	public Response uninstallMemcachedL(
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -363,7 +346,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"memcached");
-			int eid = a.sendUninstallMemcachedMsgOnLinux( ip, scIPAddr,installPath);
+			int eid = a.sendUninstallMemcachedMsgOnLinux( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall memcached has already been executing ");
 			res = Response.ok(entity).build();
@@ -381,16 +364,16 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallIISRewrite(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
-		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
+		ApplicationUninstallBase a = new ApplicationUninstallBase();
+		JSONObject entity = new JSONObject();
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"iisrewrite");
-			int eid = a.sendUninstallIISRewriteMsg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallIISRewriteMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall IISRewrite has already been executing ");
 			res = Response.ok(entity).build();
@@ -403,40 +386,39 @@ public class AppUninstallResource {
 		}
 		return res;
 	}
-	@POST
-	@Path("/ASP")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response uninstallASP(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
-			) {
-		Response res = null;
-		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
-		DBOperation dbop = new DBOperation();
-		String[] scIPAddr= new String[2];
-		try {
-			scIPAddr = dbop.getRCAddrByIP("hp", ip,"asp");
-			int eid = a.sendUninstallASPMsg( ip, scIPAddr, installPath);
-			entity.put("eid", eid);
-			entity.put("status", "uninstall ASP has already been executing ");
-			res = Response.ok(entity).build();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return res;
-	}
+//	@POST
+//	@Path("/ASP")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public Response uninstallASP(
+//			@QueryParam("ip") String ip,
+//			@QueryParam("installPath") String installPath
+//			) {
+//		Response res = null;
+//		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
+//		DBOperation dbop = new DBOperation();
+//		String[] scIPAddr= new String[2];
+//		try {
+//			scIPAddr = dbop.getRCAddrByIP("hp", ip,"asp");
+//			int eid = a.sendUninstallASPMsg( ip);
+//			entity.put("eid", eid);
+//			entity.put("status", "uninstall ASP has already been executing ");
+//			res = Response.ok(entity).build();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return res;
+//	}
 	@POST
 	@Path("/FTP")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallFTP(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -444,7 +426,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"ftp");
-			int eid = a.sendUninstallFTPMsg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallFTPMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall FTP has already been executing ");
 			res = Response.ok(entity).build();
@@ -461,7 +443,7 @@ public class AppUninstallResource {
 	@Path("/FTP_Linux")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uninstallFTP(
+	public Response uninstallFTPL(
 			@QueryParam("ip") String ip
 			) {
 		Response res = null;
@@ -470,7 +452,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"ftp");
-			int eid = a.sendUninstallFTPMsgOnLinux( ip, scIPAddr);
+			int eid = a.sendUninstallFTPMsgOnLinux( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall FTP has already been executing ");
 			res = Response.ok(entity).build();
@@ -483,43 +465,39 @@ public class AppUninstallResource {
 		}
 		return res;
 	}
-	@POST
-	@Path("/ASPNET")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response uninstallASPNET(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
-			) {
-		Response res = null;
-		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
-		DBOperation dbop = new DBOperation();
-		String[] scIPAddr= new String[2];
-		try {
-			scIPAddr = dbop.getRCAddrByIP("hp", ip,"aspnet");
-			int eid = a.sendUninstallASPNETMsg( ip, scIPAddr, installPath);
-			entity.put("eid", eid);
-			entity.put("status", "uninstall ASPNET has already been executing ");
-			res = Response.ok(entity).build();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return res;
-	}
+//	@POST
+//	@Path("/ASPNET")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public Response uninstallASPNET(
+//			@QueryParam("ip") String ip,
+//			@QueryParam("installPath") String installPath
+//			) {
+//		Response res = null;
+//		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
+//		DBOperation dbop = new DBOperation();
+//		String[] scIPAddr= new String[2];
+//		try {
+//			scIPAddr = dbop.getRCAddrByIP("hp", ip,"aspnet");
+//			int eid = a.sendUninstallASPNETMsg( ip);
+//			entity.put("eid", eid);
+//			entity.put("status", "uninstall ASPNET has already been executing ");
+//			res = Response.ok(entity).build();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return res;
+//	}
 	@POST
 	@Path("/SQLServer2008R2")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallSQLServer2008R2(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath,
-			@QueryParam("rootPswd") String rootPswd,
-			@QueryParam("hostName") String hostName,
-			@QueryParam("userName") String userName
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -527,7 +505,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"sqlserver2008r2");
-			int eid = a.sendUninstallSQLServer2008R2Msg( ip, scIPAddr, installPath,rootPswd,hostName,userName);
+			int eid = a.sendUninstallSQLServer2008R2Msg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall SQLServer2008R2 has already been executing ");
 			res = Response.ok(entity).build();
@@ -545,8 +523,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallSQLServer2000(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -554,7 +531,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"sqlserver2000");
-			int eid = a.sendUninstallSQLServer2000Msg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallSQLServer2000Msg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall SQLServer2000 has already been executing ");
 			res = Response.ok(entity).build();
@@ -572,8 +549,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallOracle10g(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -581,7 +557,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"oracle10g");
-			int eid = a.sendUninstallOracle10gMsg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstallOracle10gMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall Oracle10g has already been executing ");
 			res = Response.ok(entity).build();
@@ -599,12 +575,7 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallOracle11g(
-			@QueryParam("ip") String ip,
-			@QueryParam("hostname") String hostname,
-			@QueryParam("inventorypath") String inventorypath,
-			@QueryParam("oraclebase") String oraclebase,
-			@QueryParam("oraclehome") String oraclehome,
-			@QueryParam("rootPswd") String rootPswd
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
@@ -612,7 +583,7 @@ public class AppUninstallResource {
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"oracle11g");
-			int eid = a.sendUninstallOracle11gMsg( ip, scIPAddr, hostname,inventorypath,oraclebase,oraclehome,rootPswd);
+			int eid = a.sendUninstallOracle11gMsg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall Oracle11g has already been executing ");
 			res = Response.ok(entity).build();
@@ -630,16 +601,16 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstall360(
-			@QueryParam("ip") String ip,
-			@QueryParam("installPath") String installPath
+			@QueryParam("ip") String ip
 			) {
 		Response res = null;
-		ApplicationUninstallBase a = new ApplicationUninstallBase();JSONObject entity = new JSONObject();
+		ApplicationUninstallBase a = new ApplicationUninstallBase();
+		JSONObject entity = new JSONObject();
 		DBOperation dbop = new DBOperation();
 		String[] scIPAddr= new String[2];
 		try {
 			scIPAddr = dbop.getRCAddrByIP("hp", ip,"360");
-			int eid = a.sendUninstall360Msg( ip, scIPAddr, installPath);
+			int eid = a.sendUninstall360Msg( ip);
 			entity.put("eid", eid);
 			entity.put("status", "uninstall 360 has already been executing ");
 			res = Response.ok(entity).build();

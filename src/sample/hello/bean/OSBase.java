@@ -92,33 +92,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			
-			
-			
-			/*//加密
-			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
-			ObjectOutputStream oos = new ObjectOutputStream(
-					socket.getOutputStream());
-			oos.writeObject(str);
-			//获得反馈信息
-			ObjectInputStream ois = new ObjectInputStream(
-					socket.getInputStream());
-			str = (String)ois.readObject();
-			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); */
-			
-			
-			
-			if (msg.getType().equals(MsgType.changePasswd)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("0x000")){
-					//在数据库里更新该op的状态
-					updateOpStatus(opID,"0x000");
-					return "0x000";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message)SerializeUtil.deserialize(str1); 
+				if (msg.getType().equals(MsgType.changePasswd)) {
+					String ret = (String)msg.getValues();
+					if(ret.equals("0x0000000")){
+						//在数据库里更新该op的状态
+						updateOpStatus(opID,"0x0000000");
+						return "0x0000000";
+					}
 				}
 			}
 			socket.close();
@@ -132,8 +116,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x001");
-		return "0x001";
+		updateOpStatus(opID,"0x0000001");
+		return "0x0000001";
 	}
 	/**
 	 * 查看系统服务
@@ -157,7 +141,7 @@ public class OSBase {
 				if(ret.equals("success")){
 					
 				}
-				System.out.println(ret);
+				
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -206,39 +190,28 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			
-			/*//加密
-			String datatemp = SerializeUtil.serialize(msg);  
-            String str = MD5Util.convertMD5(datatemp);
-            //传输
-			ObjectOutputStream oos = new ObjectOutputStream(
-					socket.getOutputStream());
-			oos.writeObject(str);
-			//获得反馈信息
-			ObjectInputStream ois = new ObjectInputStream(
-					socket.getInputStream());
-			str = (String)ois.readObject();
-			//解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message)SerializeUtil.deserialize(str2); */
-			if (msg.getType().equals(MsgType.startService)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("0x010")){
-					updateOpStatus(opID,"0x010");
-					return "0x010";
-				}else{
-					updateOpStatus(opID,"0x011");
-					return "0x011";
-				}
-			}else if(msg.getType().equals(MsgType.stopService)){
-				String ret = (String)msg.getValues();
-				if(ret.equals("0x020")){
-					updateOpStatus(opID,"0x020");
-					return "0x020";
-				}else{
-					updateOpStatus(opID,"0x021");
-					return "0x021";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.startService)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000100")) {
+						updateOpStatus(opID, "0x0000100");
+						return "0x0000100";
+					} else {
+						updateOpStatus(opID, "0x0000101");
+						return "0x0000101";
+					}
+				} else if (msg.getType().equals(MsgType.stopService)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000200")) {
+						updateOpStatus(opID, "0x0000200");
+						return "0x0000200";
+					} else {
+						updateOpStatus(opID, "0x0000201");
+						return "0x0000201";
+					}
 				}
 			}
 			socket.close();
@@ -252,8 +225,7 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return "0x021";
+		return "";
 	}
 	/**
 	 * 查看系统日志
@@ -291,7 +263,7 @@ public class OSBase {
 //				if(ret.equals("success")){
 //					return true;
 //				}
-//				System.out.println(ret);
+//				
 				o.put(logType, "This is a windows log.");
 			}
 			socket.close();
@@ -338,7 +310,6 @@ public class OSBase {
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(str);
-			
 			//获得反馈信息
 			socket.setSoTimeout(3000);
 			try {
@@ -348,18 +319,22 @@ public class OSBase {
 				//解密
 				byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 				String str1 = new String(str2,"iso-8859-1");
-				msg = (Message)SerializeUtil.deserialize(str1); 
-				if (msg.getType().equals(MsgType.changeIP)) {
-					// 此处应该返回执行结果失败
-					System.out.println("modify ip addr failed!");
+				if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+					System.out.println("JAVA security, error key");
+				}else{
+					msg = (Message) SerializeUtil.deserialize(str1);
+					if (msg.getType().equals(MsgType.changeIP)) {
+						// 此处应该返回执行结果失败
+						System.out.println("modify ip addr failed!");
+					}
 				}
 			} catch (SocketTimeoutException ste) {
 				// 修改数据库，将原来的ip改成changeToIP
 				System.out.println("modify ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIP);
-				updateOpStatus(opID,"0x050");
-				return  "0x050";
+				updateOpStatus(opID,"0x0000500");
+				return  "0x0000500";
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -372,8 +347,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x051");
-		return "0x051";
+		updateOpStatus(opID,"0x0000501");
+		return "0x0000501";
 	}
 	/**
 	 * windows修改主机affi IP
@@ -413,13 +388,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.changeAffiIP)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("0x060")){
-					System.out.println("windows change affi ip :"+ret);
-					updateOpStatus(opID,"0x060");
-					return "0x060";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.changeAffiIP)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000600")) {
+						System.out.println("windows change affi ip :" + ret);
+						updateOpStatus(opID, "0x0000600");
+						return "0x0000600";
+					}
 				}
 			}
 			socket.close();
@@ -433,8 +412,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x061");
-		return "0x061";
+		updateOpStatus(opID,"0x0000601");
+		return "0x0000601";
 	}
 	/*public boolean sendChangeAffiIPMsg( String ip, String mac,String changeToIp,
 			String mask,String gateway, String[] dns, String[] affiIP,
@@ -522,7 +501,6 @@ public class OSBase {
 			values[1] = mask;
 			values[2] = gateway;
 			values[3] = dns;
-			
 			Message msg = new Message(MsgType.changeIP, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -541,17 +519,21 @@ public class OSBase {
 				//解密
 				byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 				String str1 = new String(str2,"iso-8859-1");
-				msg = (Message)SerializeUtil.deserialize(str1); 
-				if (msg.getType().equals(MsgType.changeIP)) {
-					// 此处应该返回执行结果失败
-					String ret = (String)msg.getValues();
-					if(ret.equals("0x050")){
-						updateOpStatus(opID,"0x050");
-						return "0x050";
-					}else{
-						System.out.println("modify ip addr failed!");
-						updateOpStatus(opID,"0x051");
-						return "0x051";
+				if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+					System.out.println("JAVA security, error key");
+				}else{
+					msg = (Message) SerializeUtil.deserialize(str1);
+					if (msg.getType().equals(MsgType.changeIP)) {
+						//
+						String ret = (String) msg.getValues();
+						if (ret.equals("0x0000500")) {
+							updateOpStatus(opID, "0x0000500");
+							return "0x0000500";
+						} else {
+							System.out.println("modify ip addr failed!");
+							updateOpStatus(opID, "0x0000501");
+							return "0x0000501";
+						}
 					}
 				}
 			} catch (SocketTimeoutException ste) {
@@ -559,8 +541,8 @@ public class OSBase {
 				System.out.println("modify windows ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIp);
-				updateOpStatus(opID,"0x050");
-				return "0x050";
+				updateOpStatus(opID,"0x0000500");
+				return "0x0000500";
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -573,8 +555,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x051");
-		return "0x051";
+		updateOpStatus(opID,"0x0000501");
+		return "0x0000501";
 	}
 	/**
 	 * 修改主机附属IP on Linux
@@ -595,7 +577,6 @@ public class OSBase {
 			values[0] = deviceName;
 			values[1] = mask;
 			values[2] = changeToIp;
-			
 			Message msg = new Message(MsgType.changeAffiIP, opID+"", values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -611,14 +592,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.changeAffiIP)) {
-				String ret = (String)msg.getValues();
-				if (ret.equals("0x060")) {
-					updateOpStatus(opID,"0x060");
-					return "0x060";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.changeAffiIP)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000600")) {
+						updateOpStatus(opID, "0x0000600");
+						return "0x0000600";
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -631,8 +615,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x061");
-		return "0x061";
+		updateOpStatus(opID,"0x0000601");
+		return "0x0000601";
 	}
 	/**
 	 * 磁盘格式化
@@ -660,14 +644,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.diskFormat)) {
-				String ret = (String)msg.getValues();
-				if (ret.equals("0x030")) {
-					updateOpStatus(opID,"0x030");
-					return "0x030";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.diskFormat)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000300")) {
+						updateOpStatus(opID, "0x0000300");
+						return "0x0000300";
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -680,8 +667,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x031");
-		return "0x031";
+		updateOpStatus(opID,"0x0000301");
+		return "0x0000301";
 	}
 	/**
 	 * 修改安全规则
@@ -717,14 +704,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.changeSecRule)) {
-				String ret = (String)msg.getValues();
-				if (ret.equals("0x040")) {
-					updateOpStatus(opID,"0x040");
-					return "0x040";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.changeSecRule)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000400")) {
+						updateOpStatus(opID, "0x0000400");
+						return "0x0000400";
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -737,8 +727,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x041");
-		return "0x041";
+		updateOpStatus(opID,"0x0000401");
+		return "0x0000401";
 	}
 	/**
 	 * 修改安全规则 on linux
@@ -773,14 +763,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.changeSecRule)) {
-				String ret = (String)msg.getValues();
-				if (ret.equals("0x040")) {
-					updateOpStatus(opID,"0x040");
-					return "0x040";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.changeSecRule)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000400")) {
+						updateOpStatus(opID, "0x0000400");
+						return "0x0000400";
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -793,8 +786,8 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x041");
-		return "0x041";
+		updateOpStatus(opID,"0x0000401");
+		return "0x0000401";
 	}
 	
 	
@@ -817,14 +810,17 @@ public class OSBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.changeUlimit)) {
-				String ret = (String)msg.getValues();
-				if (ret.equals("0x070")) {
-					updateOpStatus(opID,"0x070");
-					return "0x070";
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.changeUlimit)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("0x0000700")) {
+						updateOpStatus(opID, "0x0000700");
+						return "0x0000700";
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -837,7 +833,7 @@ public class OSBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateOpStatus(opID,"0x071");
-		return "0x071";
+		updateOpStatus(opID,"0x0000701");
+		return "0x0000701";
 	}
 }

@@ -51,7 +51,7 @@ public class VMScript {
 			
 			
 			// 发送文件
-			System.out.println("文件长度为：" + file.length());
+			System.out.println("#####script file length : " + file.length());
 			DataOutputStream dos = new DataOutputStream(
 					socket.getOutputStream());
 			FileInputStream fis = new FileInputStream(file.getPath());
@@ -59,7 +59,7 @@ public class VMScript {
 			dos.writeLong((long) file.length());
 			dos.flush();
 			System.out.println(file.length());
-			System.out.println("开始发送文件" + file.getName() + "...");
+			System.out.println("#####start to send script file : " + file.getName() + "...");
 
 			// 缓冲区大小
 			int bufferSize = 8192;
@@ -79,7 +79,7 @@ public class VMScript {
 
 			}
 			dos.flush();
-			System.out.println("传输完成");
+			System.out.println("#####script file transmission completed!");
 			
 			
 			//获得反馈信息
@@ -89,24 +89,27 @@ public class VMScript {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 		
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
 
-//			// 获得反馈信息
-//			ObjectInputStream ois = new ObjectInputStream(
-//					socket.getInputStream());
-//			str = (String) ois.readObject();
-//			// 解密
-//			String str2 = MD5Util.convertMD5(str);
-//			msg = (Message) SerializeUtil.deserialize(str2);
-			if (msg.getType().equals(MsgType.executeVMScript)) {
-				String ret = (String) msg.getValues();
-				if (ret.equals("success") || ret.equals("executing")) {
-					return opID;
+				// // 获得反馈信息
+				// ObjectInputStream ois = new ObjectInputStream(
+				// socket.getInputStream());
+				// str = (String) ois.readObject();
+				// // 解密
+				// String str2 = MD5Util.convertMD5(str);
+				// msg = (Message) SerializeUtil.deserialize(str2);
+				if (msg.getType().equals(MsgType.executeVMScript)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						System.out.println("executeVMScript opID:" + ret);
+						return opID;
+					}
 				}
-				System.out.println("executeVMScript opID:"+ret);
 			}
 			socket.close();
-
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnknownHostException e) {

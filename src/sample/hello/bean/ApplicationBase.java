@@ -43,7 +43,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupTomcatMsg(String ip,String[] scIPAddr,String installPath,String jdkPath){
-		int opID = insertEvent(ip,"setupTomcat");
+		int opID = insertEvent(ip,"setup-Tomcat");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -67,13 +67,16 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupTomcat)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupTomcat)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -97,7 +100,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupTomcatOnLinuxMsg(String ip,String[] scIPAddr,String installPath,String jdkName,String jdkPath){
-		int opID = insertEvent(ip,"setupTomcat");
+		int opID = insertEvent(ip,"setup-Tomcat");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -122,13 +125,16 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupTomcat)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupTomcat)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -152,7 +158,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMySqlMsg(String ip,String[] scIPAddr,String installPath,String pswd){
-		int opID = insertEvent(ip,"setupMySql");
+		int opID = insertEvent(ip,"setup-MySql");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -177,12 +183,15 @@ public class ApplicationBase {
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
 			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupMySql)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				if (msg.getType().equals(MsgType.setupMySql)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -206,7 +215,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMySqlOnLinuxMsg(String ip,String[] scIPAddr,String pswd){
-		int opID = insertEvent(ip,"setupMySql");
+		int opID = insertEvent(ip,"setup-MySql");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -232,12 +241,15 @@ public class ApplicationBase {
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
 			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupMySql)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				if (msg.getType().equals(MsgType.setupMySql)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -261,7 +273,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupJdkMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupJdk");
+		int opID = insertEvent(ip,"setup-Jdk");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -284,13 +296,16 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupJdk)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupJdk)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -314,7 +329,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupApacheMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupApache");
+		int opID = insertEvent(ip,"setup-Apache");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -337,13 +352,16 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupApache)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupApache)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -367,7 +385,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupNginxMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupNginx");
+		int opID = insertEvent(ip,"setup-Nginx");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -391,20 +409,24 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			/*ObjectOutputStream oos = new ObjectOutputStream(
-					socket.getOutputStream());
-			oos.writeObject(msg);
-			ObjectInputStream ois = new ObjectInputStream(
-					socket.getInputStream());
-			msg = (Message) ois.readObject();*/
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				/*
+				 * ObjectOutputStream oos = new ObjectOutputStream(
+				 * socket.getOutputStream()); oos.writeObject(msg);
+				 * ObjectInputStream ois = new ObjectInputStream(
+				 * socket.getInputStream()); msg = (Message) ois.readObject();
+				 */
 
-			if (msg.getType().equals(MsgType.setupNginx)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+				if (msg.getType().equals(MsgType.setupNginx)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -428,7 +450,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupZendGuardLoaderMsg(String ip,String[] scIPAddr,String phpPath){
-		int opID = insertEvent(ip,"setupZendGuardLoader");
+		int opID = insertEvent(ip,"setup-ZendGuardLoader");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -451,13 +473,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -481,7 +507,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupZendGuardLoaderMsgOnLinux(String ip,String[] scIPAddr,String installPath,String phpPath){
-		int opID = insertEvent(ip,"setupZendGuardLoader");
+		int opID = insertEvent(ip,"setup-ZendGuardLoader");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -505,13 +531,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -535,7 +565,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupPythonMsg(String ip,String[] scIPAddr){
-		int opID = insertEvent(ip,"setupPython");
+		int opID = insertEvent(ip,"setup-Python");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -557,13 +587,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupPython)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupPython)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -587,7 +621,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupPythonMsgOnLinux(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupPython");
+		int opID = insertEvent(ip,"setup-Python");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -610,13 +644,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupPython)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupPython)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -640,7 +678,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMemcachedMsg(String ip,String[] scIPAddr){
-		int opID = insertEvent(ip,"setupMemcached");
+		int opID = insertEvent(ip,"setup-Memcached");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -663,13 +701,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupMemcached)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupMemcached)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -693,7 +735,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMemcachedMsgOnLinux(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupMemcached");
+		int opID = insertEvent(ip,"setup-Memcached");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -716,13 +758,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupMemcached)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupMemcached)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -746,7 +792,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupIISRewriteMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupIISRewrite");
+		int opID = insertEvent(ip,"setup-IISRewrite");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -769,13 +815,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupIISRewrite)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupIISRewrite)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -799,7 +849,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	/*public int sendSetupASPMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupASP");
+		int opID = insertEvent(ip,"setup-ASP");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -828,7 +878,7 @@ public class ApplicationBase {
 				if(ret.equals("success")||ret.equals("executing")){
 					return opID;
 				}
-				System.out.println(ret);
+				
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -849,7 +899,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupFTPMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupFTP");
+		int opID = insertEvent(ip,"setup-FTP");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -872,13 +922,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupFTP)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupFTP)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -902,7 +956,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupFTPMsgOnLinux(String ip,String[] scIPAddr){
-		int opID = insertEvent(ip,"setupFTP");
+		int opID = insertEvent(ip,"setup-FTP");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -924,13 +978,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupFTP)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupFTP)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -954,7 +1012,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	/*public int sendSetupASPNETMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupASPNET");
+		int opID = insertEvent(ip,"setup-ASPNET");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -983,7 +1041,7 @@ public class ApplicationBase {
 				if(ret.equals("success")||ret.equals("executing")){
 					return opID;
 				}
-				System.out.println(ret);
+				
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -1007,7 +1065,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupSQLServer2008R2Msg(String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
-		int opID = insertEvent(ip,"setupSQLServer2008R2");
+		int opID = insertEvent(ip,"setup-SQLServer2008R2");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1033,13 +1091,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
 			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupSQLServer2008R2)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+				if (msg.getType().equals(MsgType.setupSQLServer2008R2)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -1063,7 +1125,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupSQLServer2000Msg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupSQLServer2000");
+		int opID = insertEvent(ip,"setup-SQLServer2000");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1086,13 +1148,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupSQLServer2000)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupSQLServer2000)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -1116,7 +1182,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupOracle10gMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setupOracle10g");
+		int opID = insertEvent(ip,"setup-Oracle10g");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1139,13 +1205,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupOracle10g)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupOracle10g)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -1174,7 +1244,7 @@ public class ApplicationBase {
 	 */
 	public int sendSetupOracle11gMsg(String ip,String[] scIPAddr,String hostname,String inventorypath,
 			String oraclebase,String oraclehome, String rootPswd){
-		int opID = insertEvent(ip,"setupOracle11g");
+		int opID = insertEvent(ip,"setup-Oracle11g");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1201,13 +1271,17 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setupOracle11g)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupOracle11g)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {
@@ -1231,7 +1305,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetup360Msg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup360");
+		int opID = insertEvent(ip,"setup-360");
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1254,13 +1328,16 @@ public class ApplicationBase {
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
-			msg = (Message)SerializeUtil.deserialize(str1); 
-			if (msg.getType().equals(MsgType.setup360)) {
-				String ret = (String)msg.getValues();
-				if(ret.equals("success")||ret.equals("executing")){
-					return opID;
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setup360)) {
+					String ret = (String) msg.getValues();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
 				}
-				System.out.println(ret);
 			}
 			socket.close();
 		} catch (ClassNotFoundException e) {

@@ -59,13 +59,13 @@ public class DBOperation {
 	}
 	/**
 	 * 插入新的操作(op)到数据库，先插一条操作信息到op表，再在opinfo表里自动插入一条开始执行的记录。
-	 * 基础环境配置，2步
-	 * 安装，5步(开始执行-->正在下载-->下载完成-->正在安装-->安装结果码)
-	 * 卸载，脚本执行，3步
-	 * 更新，5步（与安装相同）
-	 * 但是它们的第一步都是“开始执行”-->因为要支持各种不同的操作系统，所以数据库里面用英文存储
+	 * 		基础环境配置，2步(开始执行start executing-->执行结果码0x0000000)
+	 * 		安装，5步(开始执行start executing-->正在下载downloading-->下载完成download completed-->正在安装installing-->安装结果码0x0000000)
+	 * 		卸载，脚本执行，3步(开始执行start executing-->正在执行performing-->执行结果码0x0000000)
+	 * 		更新，5步（暂定与安装相同）
+	 * 		但是它们的第一步都是“开始执行”-->因为要支持各种不同的操作系统，所以数据库里面用英文存储
 	 * @param hostIP 执行命令的虚拟机IP
-	 * @param opName 操作名，必须是是MsgType里面的枚举名字
+	 * @param opName 操作名
 	 * @return opID 操作ID
 	 * @throws SQLException
 	 */
@@ -121,6 +121,11 @@ public class DBOperation {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String sql = "INSERT INTO opinfo (opID,status,time) VALUES (" + opID+ ",'" + status + "','" + df.format(time) + "')";
 		boolean flag = stmt.execute(sql);
+		//如果status是“下载完成”，则要自己生成一条“正在安装”
+		if(status.contains("download completed")){
+			String sqlq = "INSERT INTO opinfo (opID,status,time) VALUES (" + opID+ ",'installing','" + df.format(time) + "')";
+			stmt.execute(sql);
+		}
 		//释放资源
 		dbcManager.close();
 		if(stmt!=null)
@@ -153,21 +158,21 @@ public class DBOperation {
 			status = rs.getString(1);
 		}
 		
-		//获得安装包名字
-		//**************************************************************//
-		//首先查询op表，获得hostIp和opName，得到该软件名
-		String sql3 = "SELECT hostIp,opName FROM op WHERE opID="+opID;
+		// 获得安装包名字
+		// **************************************************************//
+		// 首先查询op表，获得hostIp和opName，得到该软件名
+		String sql3 = "SELECT hostIp,opName FROM op WHERE opID=" + opID;
 		rs = stmt.executeQuery(sql3);
 		String hostIp = null;
-		String sName = null;//软件名字
-		if(rs.next()){
+		String sName = null;// 软件名字
+		if (rs.next()) {
 			hostIp = rs.getString("hostIp");
-			sName = rs.getString("opName").substring(5);
+			sName = rs.getString("opName").split("-")[1];
 		}
-		//再根据软件名字查rcinfo表，获取该软件对应的安装包名spName
+		// 再根据软件名字查rcinfo表，获取该软件对应的 安装包名spName
 		String[] temp = getRCAddrByIP("hp", hostIp, sName);
 		String spName = temp[1];
-		//**************************************************************//
+		// **************************************************************//
 			
 		
 		//如果status是“正在下载”，则要向Agent询问下载进度
@@ -185,7 +190,8 @@ public class DBOperation {
 			//算一下除法 alreadyDown/softTotalSize 注意单位要统一，都是KB
 			float progress = (float)alreadyDown/softTotalSize;
 			status = status+","+progress;
-		} else if(status.contains("installing")){//如果status是“正在安装”，则要自己计算安装进度
+		} //如果status是“正在安装”，则要自己计算安装进度。因为数据库里面的rcinfo表中存储了经验安装时间，单位为秒(s).
+		else if(status.contains("installing")){
 			//首先查opinfo表，得到“下载完成的时间”
 			String q2 = "SELECT time FROM opinfo WHERE opID="+opID+" AND status = 'download completed'";
 			rs = stmt.executeQuery(q2);
