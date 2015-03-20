@@ -23,11 +23,13 @@ public class ApplicationBase {
 	 * @param hostIp
 	 * @param opName
 	 */
-	public int insertEvent(String hostIp,String opName){
+	public int insertEvent(String hostIp,String opName,String softPath){
 		int opID = -1;
 		DBOperation dbop = new DBOperation();
 		try {
-			opID = dbop.insertOperation(hostIp,opName);
+			String version =dbop.queryVersionBySoftPath(softPath);
+			opID = dbop.insertOperation(hostIp,opName,version);
+			dbop.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -43,8 +45,9 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupTomcatMsg(String ip,String[] scIPAddr,String installPath,String jdkPath){
-		int opID = insertEvent(ip,"setup-Tomcat");
+		int opID = insertEvent(ip,"setup-Tomcat",scIPAddr[1]);
 		//发送Socket消息给Agent
+	
 		try {
 			Socket socket = new Socket(ip, 9100);
 			String[] values = new String[4];
@@ -56,6 +59,7 @@ public class ApplicationBase {
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
 			byte[] str = AESUtil.encrypt(datatemp,ip);
+			System.out.println("fa song xiao xi");
 			//传输
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
@@ -64,6 +68,7 @@ public class ApplicationBase {
 			ObjectInputStream ois = new ObjectInputStream(
 					socket.getInputStream());
 			byte[] rcvstr = (byte[])ois.readObject();
+			System.out.println("received info");
 			//解密
 			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
 			String str1 = new String(str2,"iso-8859-1");
@@ -73,6 +78,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupTomcat)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -100,7 +109,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupTomcatOnLinuxMsg(String ip,String[] scIPAddr,String installPath,String jdkName,String jdkPath){
-		int opID = insertEvent(ip,"setup-Tomcat");
+		int opID = insertEvent(ip,"setup-Tomcat",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -131,6 +140,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupTomcat)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -158,7 +171,8 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMySqlMsg(String ip,String[] scIPAddr,String installPath,String pswd){
-		int opID = insertEvent(ip,"setup-MySql");
+		
+		int opID = insertEvent(ip,"setup-MySql",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -188,6 +202,10 @@ public class ApplicationBase {
 			}else{
 				if (msg.getType().equals(MsgType.setupMySql)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -214,17 +232,15 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupMySqlOnLinuxMsg(String ip,String[] scIPAddr,String pswd){
-		int opID = insertEvent(ip,"setup-MySql");
+	public int sendSetupMySqlOnLinuxMsg(String ip,String[] scIPAddr){
+		int opID = insertEvent(ip,"setup-MySql",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
 			String[] values = new String[3];
 			values[0] = scIPAddr[0];
-//			String temps = scIPAddr[1];
 			values[1] = scIPAddr[1];
-			values[2] = pswd;
-//			values[3] = pswd;
+//			values[2] = pswd;
 			Message msg = new Message(MsgType.setupMySql, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -246,6 +262,10 @@ public class ApplicationBase {
 			}else{
 				if (msg.getType().equals(MsgType.setupMySql)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -273,7 +293,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupJdkMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-Jdk");
+		int opID = insertEvent(ip,"setup-Jdk",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -302,6 +322,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupJdk)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -328,15 +352,16 @@ public class ApplicationBase {
 	 * @param installPath
 	 * @return
 	 */
-	public int sendSetupApacheMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-Apache");
+	public int sendSetupApacheMsg(String ip,String[] scIPAddr,String installPath,String emailAddress){
+		int opID = insertEvent(ip,"setup-Apache",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
-			String[] values = new String[3];
+			String[] values = new String[4];
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
 			values[2] = installPath;
+			values[3] = emailAddress;
 			Message msg = new Message(MsgType.setupApache, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -358,6 +383,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupApache)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -385,7 +414,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupNginxMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-Nginx");
+		int opID = insertEvent(ip,"setup-Nginx",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -422,6 +451,10 @@ public class ApplicationBase {
 
 				if (msg.getType().equals(MsgType.setupNginx)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -450,14 +483,14 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupZendGuardLoaderMsg(String ip,String[] scIPAddr,String phpPath){
-		int opID = insertEvent(ip,"setup-ZendGuardLoader");
+		int opID = insertEvent(ip,"setup-ZendGuardLoader",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
-			String[] values = new String[4];
+			String[] values = new String[3];
 			values[0] = scIPAddr[0];
 			values[1] = scIPAddr[1];
-			values[3] = phpPath;
+			values[2] = phpPath;
 			Message msg = new Message(MsgType.setupZendGuardLoader, opID+"",values);
 			//加密
 			String datatemp = SerializeUtil.serialize(msg);  
@@ -479,6 +512,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -507,7 +544,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupZendGuardLoaderMsgOnLinux(String ip,String[] scIPAddr,String installPath,String phpPath){
-		int opID = insertEvent(ip,"setup-ZendGuardLoader");
+		int opID = insertEvent(ip,"setup-ZendGuardLoader",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -537,6 +574,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupZendGuardLoader)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -565,7 +606,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupPythonMsg(String ip,String[] scIPAddr){
-		int opID = insertEvent(ip,"setup-Python");
+		int opID = insertEvent(ip,"setup-Python",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -593,6 +634,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupPython)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -621,7 +666,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupPythonMsgOnLinux(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-Python");
+		int opID = insertEvent(ip,"setup-Python",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -650,6 +695,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupPython)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -678,7 +727,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMemcachedMsg(String ip,String[] scIPAddr){
-		int opID = insertEvent(ip,"setup-Memcached");
+		int opID = insertEvent(ip,"setup-Memcached",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -707,6 +756,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupMemcached)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -735,7 +788,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupMemcachedMsgOnLinux(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-Memcached");
+		int opID = insertEvent(ip,"setup-Memcached",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -764,6 +817,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupMemcached)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -792,7 +849,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupIISRewriteMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-IISRewrite");
+		int opID = insertEvent(ip,"setup-IISRewrite",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -821,6 +878,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupIISRewrite)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -899,7 +960,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupFTPMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-FTP");
+		int opID = insertEvent(ip,"setup-FTP",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -928,6 +989,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupFTP)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -956,7 +1021,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupFTPMsgOnLinux(String ip,String[] scIPAddr){
-		int opID = insertEvent(ip,"setup-FTP");
+		int opID = insertEvent(ip,"setup-FTP",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -984,6 +1049,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupFTP)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -1065,7 +1134,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupSQLServer2008R2Msg(String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
-		int opID = insertEvent(ip,"setup-SQLServer2008R2");
+		int opID = insertEvent(ip,"setup-SQLServer2008R2",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1097,6 +1166,10 @@ public class ApplicationBase {
 			msg = (Message)SerializeUtil.deserialize(str1); 
 				if (msg.getType().equals(MsgType.setupSQLServer2008R2)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -1116,6 +1189,76 @@ public class ApplicationBase {
 		}
 		return opID;
 	}
+	
+	
+	/**
+	 * 界面安装SQLServer2008R2
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param installPath
+	 * @param rootPswd
+	 * @param hostName
+	 * @param userName
+	 * @return
+	 */
+	public int sendSetupSQLServer2008R2InterfaceMsg(String ip,String[] scIPAddr,String installPath,String rootPswd,String hostName,String userName){
+		int opID = insertEvent(ip,"setup-SQLServer2008R2",scIPAddr[1]);
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[6];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = installPath;
+			values[3] = rootPswd;
+			values[4] = hostName;
+			values[5] = userName;
+			Message msg = new Message(MsgType.setupSQLServer2008R2Interface, opID+"",values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+			msg = (Message)SerializeUtil.deserialize(str1); 
+				if (msg.getType().equals(MsgType.setupSQLServer2008R2Interface)) {
+					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
+				}
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	
 	/**
 	 * 安装SQLServer2000
 	 * @param uid
@@ -1125,7 +1268,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupSQLServer2000Msg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-SQLServer2000");
+		int opID = insertEvent(ip,"setup-SQLServer2000",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1154,6 +1297,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupSQLServer2000)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -1173,6 +1320,69 @@ public class ApplicationBase {
 		}
 		return opID;
 	}
+	
+	/**
+	 * 界面安装SQLServer2000
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param installPath
+	 * @return
+	 */
+	public int sendSetupSQLServer2000InterfaceMsg(String ip,String[] scIPAddr,String installPath){
+		int opID = insertEvent(ip,"setup-SQLServer2000",scIPAddr[1]);
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[3];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = installPath;
+			Message msg = new Message(MsgType.setupSQLServer2000Interface, opID+"",values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupSQLServer2000Interface)) {
+					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
+				}
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	
 	/**
 	 * 安装Oracle10g
 	 * @param uid
@@ -1182,7 +1392,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetupOracle10gMsg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-Oracle10g");
+		int opID = insertEvent(ip,"setup-Oracle10g",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1211,6 +1421,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupOracle10g)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -1244,7 +1458,7 @@ public class ApplicationBase {
 	 */
 	public int sendSetupOracle11gMsg(String ip,String[] scIPAddr,String hostname,String inventorypath,
 			String oraclebase,String oraclehome, String rootPswd){
-		int opID = insertEvent(ip,"setup-Oracle11g");
+		int opID = insertEvent(ip,"setup-Oracle11g",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1277,6 +1491,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setupOracle11g)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -1296,6 +1514,68 @@ public class ApplicationBase {
 		}
 		return opID;
 	}
+	
+	
+	public int sendSetupOracle11gLinuxMsg(String ip,String[] scIPAddr,String username, String oraclebase, String oracleinventory, String oraclehome, String oracle_sid, String rootPswd, String oradata){
+		int opID = insertEvent(ip,"setup-Oracle11g",scIPAddr[1]);
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[9];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = username;
+			values[3] = oraclebase;
+			values[4] = oracleinventory;
+			values[5] = oraclehome;
+			values[6] = oracle_sid;
+			values[7] = rootPswd;
+			values[8] = oradata;
+			Message msg = new Message(MsgType.setupOracle11g, opID+"",values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupOracle11g)) {
+					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
+				}
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	
 	/**
 	 * 安装360
 	 * @param uid
@@ -1305,7 +1585,7 @@ public class ApplicationBase {
 	 * @return
 	 */
 	public int sendSetup360Msg(String ip,String[] scIPAddr,String installPath){
-		int opID = insertEvent(ip,"setup-360");
+		int opID = insertEvent(ip,"setup-360",scIPAddr[1]);
 		//发送Socket消息给Agent
 		try {
 			Socket socket = new Socket(ip, 9100);
@@ -1334,6 +1614,10 @@ public class ApplicationBase {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.setup360)) {
 					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
@@ -1352,5 +1636,152 @@ public class ApplicationBase {
 		}
 		return opID;
 	}
+	
+	
+	/**
+	 * 安装Oracle11g
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param hostname
+	 * @param inventorypath
+	 * @param installPath
+	 * @param oraclehome
+	 * @param rootPswd
+	 * @return
+	 */
+	public int sendSetupOracle10gInterfaceMsg(String ip,String[] scIPAddr,String hostname,String inventorypath,
+			String oraclebase,String oraclehome, String rootPswd){
+		int opID = insertEvent(ip,"setup-Oracle10g",scIPAddr[1]);
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[7];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = hostname;
+			values[3] = inventorypath;
+			values[4] = oraclebase;
+			values[5] = oraclehome;
+			values[6] = rootPswd;
+			Message msg = new Message(MsgType.setupOracle10gInterface, opID+"",values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupOracle10gInterface)) {
+					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
+				}
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	
+	
+	
+	/**
+	 * 安装Oracle11g
+	 * @param uid
+	 * @param ip
+	 * @param scIPAddr
+	 * @param hostname
+	 * @param inventorypath
+	 * @param installPath
+	 * @param oraclehome
+	 * @param rootPswd
+	 * @return
+	 */
+	public int sendSetupOracle11gInterfaceMsg(String ip,String[] scIPAddr,String oraclebase, String oraclehome,
+			String inventorypath,String databasename,String rootPswd){
+		int opID = insertEvent(ip,"setup-Oracle11g",scIPAddr[1]);
+		//发送Socket消息给Agent
+		try {
+			Socket socket = new Socket(ip, 9100);
+			String[] values = new String[7];
+			values[0] = scIPAddr[0];
+			values[1] = scIPAddr[1];
+			values[2] = oraclebase;
+			values[3] = oraclehome;
+			values[4] = inventorypath;
+			values[5] = databasename;
+			values[6] = rootPswd;
+			Message msg = new Message(MsgType.setupOracle11gInterface, opID+"",values);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str = AESUtil.encrypt(datatemp,ip);
+			//传输
+			ObjectOutputStream oos = new ObjectOutputStream(
+					socket.getOutputStream());
+			oos.writeObject(str);
+			//获得反馈信息
+			ObjectInputStream ois = new ObjectInputStream(
+					socket.getInputStream());
+			byte[] rcvstr = (byte[])ois.readObject();
+			//解密
+			byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+			String str1 = new String(str2,"iso-8859-1");
+			if(str1.equals("NoSuchAlgorithmException")||str1.equals("NoSuchPaddingException")||str1.equals("InvalidKeyException")||str1.equals("BadPaddingException")||str1.equals("IllegalBlockSizeException")){
+				System.out.println("JAVA security, error key");
+			}else{
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.setupOracle11gInterface)) {
+					String ret = (String) msg.getValues();
+					//插入数据库
+					DBOperation dbop = new DBOperation();
+					dbop.updateOpStatus(opID, ret);
+					dbop.close();
+					if (ret.equals("success") || ret.equals("executing")) {
+						return opID;
+					}
+					
+				}
+			}
+			socket.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return opID;
+	}
+	
+	
 	
 }

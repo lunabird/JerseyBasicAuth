@@ -26,7 +26,8 @@ public class AppParamConfiguration {
 		int opID = -1;
 		DBOperation dbop = new DBOperation();
 		try {
-			opID = dbop.insertOperation(hostIp,opName);
+			opID = dbop.insertOperation(hostIp,opName,"");
+			dbop.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -44,6 +45,7 @@ public class AppParamConfiguration {
 		DBOperation dbop = new DBOperation();
 		try {
 			flag = dbop.updateOpStatus(opID,status);
+			dbop.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -362,9 +364,13 @@ public class AppParamConfiguration {
 				msg = (Message) SerializeUtil.deserialize(str1);
 				if (msg.getType().equals(MsgType.configZendGuardLoader)) {
 					String ret = (String) msg.getValues();
+					System.out.println(ret);
 					if (ret.equals("0x0300500")) {
 						updateOpStatus(opID, "0x0300500");
 						return "0x0300500";
+					}else {
+						updateOpStatus(opID, ret);
+						return ret;
 					}
 				}
 			}

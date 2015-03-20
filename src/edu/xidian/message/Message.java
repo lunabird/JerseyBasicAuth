@@ -10,6 +10,7 @@ import java.util.ArrayList;
  * @date: 2014-11-12 ионГ10:21:06
  */
 public class Message implements Serializable {
+	private static final long serialVersionUID = 803592200362798025L;
 	/**
 	 * @fieldName: type
 	 * @fieldType: MsgType

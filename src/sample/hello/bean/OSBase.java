@@ -33,7 +33,8 @@ public class OSBase {
 		int opID = -1;
 		DBOperation dbop = new DBOperation();
 		try {
-			opID = dbop.insertOperation(hostIp,opName);
+			opID = dbop.insertOperation(hostIp,opName,"");
+			dbop.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,6 +52,7 @@ public class OSBase {
 		DBOperation dbop = new DBOperation();
 		try {
 			flag = dbop.updateOpStatus(opID,status);
+			dbop.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -333,6 +335,7 @@ public class OSBase {
 				System.out.println("modify ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIP);
+				dbop.close();
 				updateOpStatus(opID,"0x0000500");
 				return  "0x0000500";
 			}
@@ -541,6 +544,7 @@ public class OSBase {
 				System.out.println("modify windows ip addr success!");
 				DBOperation dbop = new DBOperation();
 				dbop.updateHostIP(ip, changeToIp);
+				dbop.close();
 				updateOpStatus(opID,"0x0000500");
 				return "0x0000500";
 			}

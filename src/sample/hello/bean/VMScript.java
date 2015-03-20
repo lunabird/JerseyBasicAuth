@@ -27,7 +27,8 @@ public class VMScript {
 		int opID = -1;
 		DBOperation dbop = new DBOperation();
 		try {
-			opID = dbop.insertOperation(hostIp,"executeVMScript");
+			opID = dbop.insertOperation(hostIp,"executeVMScript","");
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

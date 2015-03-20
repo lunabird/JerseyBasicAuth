@@ -1,5 +1,6 @@
 package sample.DBOP;
-
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,8 +13,10 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import edu.xidian.enc.AESUtil;
 import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
@@ -21,17 +24,28 @@ import edu.xidian.message.MsgType;
 
 public class DBOperation {
 
-	private DBConnManager dbcManager = null;
+
 	private Connection con = null;
 	
 	public DBOperation() {
-		dbcManager = (new DBConnManager()).getInstance();
-		con = dbcManager.getConnection();
+		con = DBConnManager.getConnection();
 		if (con == null) {
             System.out.println("Can't get connection");
             return;
         }
 	}
+	
+	//释放连接
+	public void close() {
+		if(con!=null) {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/**@author hp
 	 * 修改IP后更新数据库,用于基础环境配置OSBase的修改IP操作
 	 * @param oldIP
@@ -44,8 +58,6 @@ public class DBOperation {
 		//获得该用户可操作的所有主机
 		String sql = "UPDATE  hostinfo  SET hostIP ='"+changeToIP+"' WHERE hostIP='"+oldIP+"'";
 		boolean flag = stmt.execute(sql);
-		//释放资源
-		dbcManager.close();
 		if(stmt!=null)
 		{
 			try{
@@ -69,12 +81,12 @@ public class DBOperation {
 	 * @return opID 操作ID
 	 * @throws SQLException
 	 */
-	public int insertOperation(String hostIP,String opName) throws SQLException{
+	public int insertOperation(String hostIP,String opName,String version) throws SQLException{
 		Statement stmt = null;
 		stmt = con.createStatement();
 		ResultSet rs = null;
 		//插入op表
-		String sql = "INSERT INTO op (hostIP,opName) VALUES ('"+hostIP+"','"+opName+"')";
+		String sql = "INSERT INTO op (hostIP,opName,version) VALUES ('"+hostIP+"','"+opName+"','"+version+"')";
 		stmt.executeUpdate(sql);
 		//获取opID
 		String sql1 = "select opID from op order by opID DESC limit 1";
@@ -90,8 +102,6 @@ public class DBOperation {
 		//插入opinfo表
 		String sql2 = "INSERT INTO opinfo (opID,status,time) VALUES ("+opID+",'start executing','"+df.format(time)+"')";
 		stmt.executeUpdate(sql2);	
-		//释放资源
-		dbcManager.close();
 		if(stmt!=null)
 		{
 			try{
@@ -123,11 +133,15 @@ public class DBOperation {
 		boolean flag = stmt.execute(sql);
 		//如果status是“下载完成”，则要自己生成一条“正在安装”
 		if(status.contains("download completed")){
+			Calendar calendar = Calendar.getInstance();    
+		    calendar.setTime(date);    
+		    calendar.add(Calendar.SECOND, 1);    
+		    date = calendar.getTime();
+		    time = new Timestamp(date.getTime()); 
 			String sqlq = "INSERT INTO opinfo (opID,status,time) VALUES (" + opID+ ",'installing','" + df.format(time) + "')";
-			stmt.execute(sql);
+			System.out.println(sqlq);
+			stmt.execute(sqlq);
 		}
-		//释放资源
-		dbcManager.close();
 		if(stmt!=null)
 		{
 			try{
@@ -139,13 +153,46 @@ public class DBOperation {
 		}
 		return flag;
 	}
+	
+	/**2015-1-20 新增
+	 * @author Administrator
+	 * 在opinfo表里更新操作状态信息并记录返回信息
+	 * @param opID
+	 * @param status
+	 * @param detailinfo
+	 * @return
+	 * @throws SQLException
+	 * 
+	 */
+	public boolean updateOpStatus(int opID, String status, String detailInfo) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		// 插入新纪录到opinfo表
+		// 计算时间
+		java.util.Date date = new java.util.Date();
+		Timestamp time = new Timestamp(date.getTime());
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String sql = "INSERT INTO opinfo (opID,status,time,detailInfo) VALUES (" + opID+ ",'" + status + "','" + df.format(time) + "','"+ detailInfo+"')";
+		boolean flag = stmt.execute(sql);
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return flag;
+	}
+	
 	/**
 	 * 获取操作执行的当前状态
 	 * @param opID
 	 * @return
 	 * @throws SQLException
 	 */
-	public String getOpStatus(int opID) throws SQLException{
+	public String getOpStatus(int opID,String flag) throws SQLException{
 		Statement stmt = null;
 		ResultSet rs = null;
 		stmt = con.createStatement();
@@ -165,13 +212,31 @@ public class DBOperation {
 		rs = stmt.executeQuery(sql3);
 		String hostIp = null;
 		String sName = null;// 软件名字
+		String spName = null;
 		if (rs.next()) {
 			hostIp = rs.getString("hostIp");
 			sName = rs.getString("opName").split("-")[1];
 		}
 		// 再根据软件名字查rcinfo表，获取该软件对应的 安装包名spName
-		String[] temp = getRCAddrByIP("hp", hostIp, sName);
-		String spName = temp[1];
+//		if(flag.equals("true")) {
+//			String[] temp = getUpdateRCAddrByIP("hp", hostIp, sName);
+//			spName = temp[1];
+//		}else {
+//		String[] temp = getRCAddrByIP("hp", hostIp, sName);
+//		spName = temp[1];
+//		}
+		
+		//根据opID获得版本号,查询的是op表
+		String sql4 = "SELECT version FROM op WHERE opID=" + opID;
+		rs = stmt.executeQuery(sql4);
+		String version ="";
+		if (rs.next()) {
+			version = rs.getString("version");			
+		}
+		//根据hostip和软件名称以及软件版本获得合适的安装包名称
+		String[] temp = getRCAddrByIP("hp", hostIp, sName,version);
+		spName = temp[1];
+		
 		// **************************************************************//
 			
 		
@@ -215,8 +280,6 @@ public class DBOperation {
 			float progress =  (now-startT)/(float)(totalInstallTime*1000);
 			status = status+","+progress;
 		}
-		//释放资源
-		dbcManager.close();
 		if(stmt!=null)
 		{
 			try{
@@ -230,6 +293,28 @@ public class DBOperation {
 		System.out.println("*************************get status:"+status);
 		return status;
 	}
+	/**2015-1-21新增
+	 * 获得操作的详细信息
+	 * @param opID
+	 * @return
+	 * @throws SQLException
+	 */
+	public String getOpDetailInfo(int opID) throws SQLException {
+		String detailInfo = "";
+		Statement stmt = null;
+		ResultSet rs = null;
+		stmt = con.createStatement();
+		//查询opinfo表,获取最新的一条记录
+		String sql = "SELECT status FROM opinfo WHERE opID='"+opID+"' ORDER BY time DESC LIMIT 1";
+		System.out.println(sql);
+		rs = stmt.executeQuery(sql);
+		if(rs.next()){
+			detailInfo = rs.getString(1);
+		}
+		return detailInfo;
+	}
+	
+	
 	/**
 	 * 向agent发送消息，获取下载软件的进度，返回已经下载的软件的大小，单位是kb
 	 * @param opID
@@ -244,26 +329,34 @@ public class DBOperation {
 			Socket socket = new Socket(ip, 9500);
 			String values = spName;
 			Message msg = new Message(MsgType.getDownloadStatus, opID+"", values);
-			// 加密
-			String datatemp = SerializeUtil.serialize(msg);
-			String str = MD5Util.convertMD5(datatemp);
-			// 传输
-			ObjectOutputStream oos = new ObjectOutputStream(
-					socket.getOutputStream());
-			oos.writeObject(str);
-			// 获得反馈信息
-			ObjectInputStream ois = new ObjectInputStream(
-					socket.getInputStream());
-			str = (String) ois.readObject();
-			// 解密
-			String str2 = MD5Util.convertMD5(str);
-			msg = (Message) SerializeUtil.deserialize(str2);
-			if (msg.getType().equals(MsgType.getDownloadStatus)) {
-				String ret = (String) msg.getValues();
-				System.out.println(ret);
-				alreadyDown = Integer.parseInt(ret);
+			//加密
+			String datatemp = SerializeUtil.serialize(msg);  
+			byte[] str;
+			try {
+				str = AESUtil.encrypt(datatemp,ip);
+				//传输
+				ObjectOutputStream oos = new ObjectOutputStream(
+						socket.getOutputStream());
+				oos.writeObject(str);
+				//获得反馈信息
+				ObjectInputStream ois = new ObjectInputStream(
+						socket.getInputStream());
+				byte[] rcvstr = (byte[])ois.readObject();
+				//解密
+				byte[] str2 = AESUtil.decrypt(rcvstr,ip);
+				String str1 = new String(str2,"iso-8859-1");
+				msg = (Message) SerializeUtil.deserialize(str1);
+				if (msg.getType().equals(MsgType.getDownloadStatus)) {
+					String ret = (String) msg.getValues();
+					System.out.println(ret);
+					alreadyDown = Integer.parseInt(ret);
+				}
+				socket.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			socket.close();
+			
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnknownHostException e) {
@@ -273,11 +366,155 @@ public class DBOperation {
 		}
 		return alreadyDown;
 	}
-	
-	
-	
-	
-	
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-17
+	 * @brief 从hostapp表里查询软件版本号
+	 */
+	public String queryHostappTableForSoftwareVersion(String hostip,String software) throws SQLException{
+		String version = null;
+		Statement stmt = null;
+		stmt = con.createStatement();
+		ResultSet rs = null;
+		String sql = "SELECT version FROM hostapp WHERE hostip = '"+hostip+"',' and software='"+software+"'";
+		rs = stmt.executeQuery(sql);
+		while(rs.next()){
+			version = rs.getString(1);
+		}
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return version;
+	}
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-17
+	 * @brief 向hostapp表里插入一条记录。hostapp表存储的信息是每台虚拟机上安装的软件及其版本。
+	 * 		    每当有软件安装成功后，会在hostapp表里增加一条记录。
+	 */
+	public void insertHostappTable(String hostip,String software,String version) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		String sql = "INSERT INTO  hostapp(hostip,software,version) VALUES ('"+hostip+"','"+software+"','"+version+"')";
+		stmt.executeUpdate(sql);
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-17
+	 * @brief 向hostapp表里删除一条记录。hostapp表存储的信息是每台虚拟机上安装的软件及其版本。
+	 * 		    每当有软件卸载成功后，会在hostapp表里删除一条记录。
+	 */
+	public void deleteHostappTable(String hostip,String software) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		String sql = "DELETE FROM hostapp WHERE (hostip='"+hostip+"' and software='"+software+"')";
+		stmt.executeUpdate(sql);
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-17
+	 * @brief 向hostapp表里更新一条记录。hostapp表存储的信息是每台虚拟机上安装的软件及其版本。
+	 * 		    每当有软件更新成功后，会在hostapp表里更新一条记录。
+	 */
+	public void updateHostappTable(String hostip,String software,String version) throws SQLException{
+		Statement stmt = null;
+		stmt = con.createStatement();
+		String sql = "UPDATE  hostapp  SET version ='"+version+"' WHERE (hostip='"+hostip+"' and software='"+software+"')";
+		stmt.executeUpdate(sql);
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-17
+	 * @brief 根据hostip查询对应的操作系统
+	 */
+	public String getHostOSByIP(String hostip) throws SQLException{
+		String os = "";
+		Statement stmt = null;
+		ResultSet rs = null;
+		stmt = con.createStatement();
+		String sql = "SELECT os FROM hostinfo WHERE hostIP='"+hostip+"'";
+		rs=stmt.executeQuery(sql);
+		while(rs.next()){
+			os = rs.getString(1);
+		}
+		return os;
+	}
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-17
+	 * @brief 查询数据库中某软件最新的版本号,返回最新的版本号
+	 */
+	public String queryAppNewestVersion(String software,String os) throws SQLException{
+		Statement stmt = null;
+		ResultSet rs = null;
+		stmt = con.createStatement();
+		String sql = "SELECT version FROM rcinfo WHERE (softName='"+software+"' and os='"+os+"')";
+		rs=stmt.executeQuery(sql);
+		ArrayList<String> versionList = new ArrayList<String>();
+		while(rs.next()) {
+			System.out.println(rs.getString(1));
+			versionList.add(rs.getString(1));
+		}
+		if(versionList.size()==0){
+			System.out.println("数据中心不存在该软件的记录！");
+		}else if(versionList.size()==1){
+			return versionList.get(0);
+		}else{
+			//判断哪一个版本号最新
+			AppVersionMng avm = new AppVersionMng();
+			String newest = avm.pickNewestVerionNumber(versionList);
+			return newest;
+		}
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
 	
 	/**@author XQ
 	 * 根据用户ID查询数据库获得该用户可以操作的主机及其所对应的软件中心地址列表
@@ -291,8 +528,8 @@ public class DBOperation {
 		ResultSet rs = null;
 		stmt = con.createStatement();
 		//获得该用户可操作的所有主机
-		String sql = "SELECT hostID FROM userhost where userID=?";
-		rs = dbcManager.query(sql, new String[]{userID});
+		String sql = "SELECT hostID FROM userhost where userID='"+userID+"'";
+		rs = stmt.executeQuery(sql);
 		ArrayList<String> hostList = new ArrayList<String>();
 		System.out.println("user contains hostID:::");
 		while(rs.next()) {
@@ -306,15 +543,15 @@ public class DBOperation {
 				String[] result = new String[2];
 				System.out.println("hostID:" + hostID);
 				//根据该主机ID获得主机的IP
-				sql = "SELECT hostIP FROM hostinfo where hostID=? LIMIT 1";
-				rs = dbcManager.query(sql, new String[]{hostID});
+				sql = "SELECT hostIP FROM hostinfo where hostID="+hostID+"' LIMIT 1";
+				rs = stmt.executeQuery(sql);
 				if(rs.next()) {
 					System.out.println("hostIP:" + rs.getString(1));
 					result[0] = rs.getString(1);
 				}
 				//获得该主机所在的软件中心地址
-				sql = "SELECT RCAddress FROM hostrc where hostID=?";
-				rs = dbcManager.query(sql, new String[]{hostID});
+				sql = "SELECT RCAddress FROM hostrc where hostID='"+hostID+"'";
+				rs = stmt.executeQuery(sql);
 				if(rs.next()) {
 					System.out.println("RCAddress:" + rs.getString(1));
 					result[1] = rs.getString(1);
@@ -322,8 +559,6 @@ public class DBOperation {
 				resultList.add(result);
 			}
 		}
-		//释放资源
-		dbcManager.close();
 		if(rs!=null)
 		{
 			try{
@@ -359,8 +594,8 @@ public class DBOperation {
 		String OS = null;
 		stmt = con.createStatement();
 		//根据用户ID获得该用户可操作的所有主机
-		String sql = "SELECT hostID FROM userhost where userID=?";
-		rs = dbcManager.query(sql, new String[]{userID});
+		String sql = "SELECT hostID FROM userhost where userID='"+userID+"'";
+		rs = stmt.executeQuery(sql);
 		ArrayList<String> hostList = new ArrayList<String>();
 		System.out.println("user contains hostID:::");
 		while(rs.next()) {
@@ -371,8 +606,8 @@ public class DBOperation {
 			//若要操作的主机在用户可操作的所有主机中
 			result = new String[3];
 			//获得要操作主机的IP
-			sql = "SELECT hostIP,OS FROM hostinfo where hostID=? LIMIT 1";
-			rs = dbcManager.query(sql, hostID);
+			sql = "SELECT hostIP,OS FROM hostinfo where hostID='"+hostID+"' LIMIT 1";
+			rs =stmt.executeQuery(sql);
 			if(rs.next()) {
 				System.out.println("hostIP:" + rs.getString(1));
 				result[0] = rs.getString(1);
@@ -380,23 +615,21 @@ public class DBOperation {
 				System.out.println("OS:" + OS);
 			}
 			//获得要操作主机所在的软件中心的地址 
-			sql = "SELECT RCAddress FROM hostrc where hostID=?";
-			rs = dbcManager.query(sql, hostID);
+			sql = "SELECT RCAddress FROM hostrc where hostID='"+hostID+"'";
+			rs = stmt.executeQuery(sql);
 			if(rs.next()) {
 				System.out.println("RCAddress:" + rs.getString(1));
 				RCAddress = rs.getString(1);
 				result[1] = RCAddress;
 			}
 			//获得要安装的软件的位置
-			sql = "SELECT softPath FROM rcinfo where RCAddress= ? and softName=? and OS=?";
-			rs = dbcManager.query(sql, RCAddress,softName.toLowerCase(),OS);
+			sql = "SELECT softPath FROM rcinfo where RCAddress= '"+RCAddress+"' and softName='"+softName.toLowerCase()+"' and OS='"+OS+"'";
+			rs =stmt.executeQuery(sql);
 			if(rs.next()) {
 				System.out.println("softPath:" + rs.getString(1));
 				result[2] = rs.getString(1);
 			}
 		}
-		//释放资源
-		dbcManager.close();
 		if(rs!=null)
 		{
 			try{
@@ -418,6 +651,26 @@ public class DBOperation {
 		return result;
 	}
 	
+	
+	/**
+	 * 
+	 * @author huangpeng
+	 * @throws SQLException 
+	 * @date 2015-3-17
+	 * @brief 根据softPath获得version
+	 */
+	public String queryVersionBySoftPath(String softpath) throws SQLException{
+		String version = "";
+		Statement stmt = null;
+		ResultSet rs = null;
+		stmt = con.createStatement();
+		String sql = "SELECT version FROM rcinfo WHERE softPath='"+softpath+"'";
+		rs=stmt.executeQuery(sql);
+		while(rs.next()){
+			version = rs.getString(1);
+		}
+		return version;
+	}
 	/**@author XQ
 	 * 根据用户名和主机IP查询数据库获得该主机所对应的软件中心地址
 	 * @param userID
@@ -425,7 +678,7 @@ public class DBOperation {
 	 * @return
 	 * @throws SQLException
 	 */
-	public String[] getRCAddrByIP(String userID,String hostIP,String softName) throws SQLException {
+	public String[] getRCAddrByIP(String userID,String hostIP,String softName,String version) throws SQLException {
 		String[] result = null;
 		String hostID = null;
 		String RCAddress = null;
@@ -435,8 +688,8 @@ public class DBOperation {
 		Statement stmt = null;
 		ResultSet rs = null;
 		stmt = con.createStatement();
-		String sql = "SELECT hostID,OS FROM hostinfo where hostIP=?";
-		rs = dbcManager.query(sql, hostIP);
+		String sql = "SELECT hostID,OS FROM hostinfo where hostIP='"+hostIP+"'";
+		rs = stmt.executeQuery(sql);
 		if(rs.next()) {
 			System.out.println("hostID:" + rs.getString(1));
 			hostID = rs.getString(1);
@@ -444,8 +697,8 @@ public class DBOperation {
 			System.out.println("OS:" + OS);
 		}
 		//根据userID获得该用户可操作的所有主机
-		sql = "SELECT hostID FROM userhost where userID=?";
-		rs = dbcManager.query(sql, userID);
+		sql = "SELECT hostID FROM userhost where userID='"+userID+"'";
+		rs = stmt.executeQuery(sql);
 		System.out.println("user can operator hostList:");
 		while(rs.next()) {
 			System.out.println(rs.getString(1));
@@ -456,8 +709,8 @@ public class DBOperation {
 			//若该主机在用户可操作的所有主机中
 			result = new String[2];
 			//获得该主机所在的软件中心的地址
-			sql = "SELECT RCAddress FROM hostrc where hostID=?";
-			rs = dbcManager.query(sql, hostID);
+			sql = "SELECT RCAddress FROM hostrc where hostID='"+hostID+"'";
+			rs = stmt.executeQuery(sql);
 			if(rs.next()) {
 				System.out.println("RCAddress:" + rs.getString(1));
 				RCAddress = rs.getString(1);
@@ -465,17 +718,16 @@ public class DBOperation {
 				
 			}
 			//获得要安装软件的路径
-			sql = "SELECT softPath FROM rcinfo where RCAddress=? and softName=? and OS=?";
-			rs = dbcManager.query(sql, RCAddress,softName.toLowerCase(),OS);
+			
+			sql = "SELECT softPath FROM rcinfo where RCAddress= '"+RCAddress+"' and softName='"+softName.toLowerCase()+"' and OS='"+OS+"' and version='"+ version+"'" ;
+			rs =stmt.executeQuery(sql);
 			if(rs.next()) {
 				System.out.println("softPath:" + rs.getString(1));
 				result[1] = rs.getString(1);
 			}
 			
 		}
-		//释放资源
-		dbcManager.close();
-		if(rs!=null)
+	if(rs!=null)
 		{
 			try{
 				rs.close();
@@ -496,40 +748,86 @@ public class DBOperation {
 		return result;
 	}
 	
-	public void test() throws SQLException {
-		Statement stmt = null;
-		ResultSet rs = null;
-		stmt = con.createStatement();
-		String sql = "SELECT * FROM userinfo";
-		rs = dbcManager.query(sql, null);
-		while(rs.next()) {
-			System.out.println(rs.getString(1));
-		}
-		
-		sql = "SELECT * FROM hostinfo";
-		rs = dbcManager.query(sql, null);
-		while(rs.next()) {
-			System.out.println(rs.getString(1)+":"+rs.getString(2));
-		}
 	
-		sql = "SELECT * FROM hostrc";
-		rs = dbcManager.query(sql, null);
-		while(rs.next()) {
-			System.out.println(rs.getString(1)+":"+rs.getString(2));
-		}
-		
-		sql = "SELECT * FROM rcinfo";
-		rs = dbcManager.query(sql, null);
-		while(rs.next()) {
-			System.out.println(rs.getString(1)+":"+rs.getString(2)+":" + rs.getString(3) + ":" + rs.getString(4));
-		}
 	
-		sql = "SELECT * FROM userhost";
-		rs = dbcManager.query(sql, null);
-		while(rs.next()) {
-			System.out.println(rs.getString(1)+":"+rs.getString(2));
-		}
-	}
+//	/**@author XQ
+//	 * 获得更新的软件包名
+//	 * @param userID
+//	 * @param hostIP
+//	 * @return
+//	 * @throws SQLException
+//	 */
+//	public String[] getUpdateRCAddrByIP(String userID,String hostIP,String softName) throws SQLException {
+//		String[] result = null;
+//		String hostID = null;
+//		String RCAddress = null;
+//		String OS = null;
+//		ArrayList<String>  hostIDList = new ArrayList<String>();
+//		//根据主机ip获得该主机的hostID
+//		Statement stmt = null;
+//		ResultSet rs = null;
+//		stmt = con.createStatement();
+//		String sql = "SELECT hostID,OS FROM hostinfo where hostIP='"+hostIP+"'";
+//		rs =stmt.executeQuery(sql);
+//		if(rs.next()) {
+//			System.out.println("hostID:" + rs.getString(1));
+//			hostID = rs.getString(1);
+//			OS = rs.getString(2);
+//			System.out.println("OS:" + OS);
+//		}
+//		//根据userID获得该用户可操作的所有主机
+//		sql = "SELECT hostID FROM userhost where userID='"+userID+"'";
+//		rs = stmt.executeQuery(sql);
+//		System.out.println("user can operator hostList:");
+//		while(rs.next()) {
+//			System.out.println(rs.getString(1));
+//			hostIDList.add(rs.getString(1));
+//			
+//		}
+//		if(hostIDList.contains(hostID)) {
+//			//若该主机在用户可操作的所有主机中
+//			result = new String[2];
+//			//获得该主机所在的软件中心的地址
+//			sql = "SELECT RCAddress FROM hostrc where hostID='"+hostID+"'";;
+//			rs =stmt.executeQuery(sql);
+//			if(rs.next()) {
+//				System.out.println("RCAddress:" + rs.getString(1));
+//				RCAddress = rs.getString(1);
+//				result[0] = RCAddress;
+//				
+//			}
+//			//获得要安装软件的路径
+//			sql = "SELECT softPath FROM rcinfo where RCAddress= '"+RCAddress+"' and softName='"+softName.toLowerCase()+"' and OS='"+OS+"' ORDER BY softVersion  DESC LIMIT 1";
+//			rs =stmt.executeQuery(sql);
+//			while(rs.next()) {
+//				System.out.println("softPath:" + rs.getString(1));
+//				result[1] = rs.getString(1);
+//			}
+//			
+//		}
+//		
+//		if(rs!=null)
+//		{
+//			try{
+//				rs.close();
+//			}catch(Exception e)
+//			{
+//				e.printStackTrace();
+//			}
+//		}
+//		if(stmt!=null)
+//		{
+//			try{
+//				stmt.close();
+//			}catch(Exception e)
+//			{
+//				e.printStackTrace();
+//			}
+//		}
+//		return result;
+//	}
+//	
+	
 	/**@author WZY
 	 * 根据用户名的ID得到 用于的密码
 	 * @param userID 用户ID
@@ -550,8 +848,6 @@ public class DBOperation {
 			result[0] = rs.getString("userID");
 			result[1] = rs.getString("pwd");
 		}
-		
-		dbcManager.close();
 		if(rs!=null)
 		{
 			try{
@@ -588,7 +884,6 @@ public class DBOperation {
 		System.out.println(sql);
 		int  flag =  stmt.executeUpdate(sql);
 		//释放资源
-		dbcManager.close();
 		if(stmt!=null)
 		{
 			try{
@@ -617,8 +912,6 @@ public class DBOperation {
 		while(rs.next()) {			
 			result[0] = rs.getString("key");
 		}
-		
-		dbcManager.close();
 		if(rs!=null)
 		{
 			try{
@@ -639,15 +932,53 @@ public class DBOperation {
 		}
 		return result[0];
 	}
+	/**@author Administrator
+	 * 获得编码信息
+	 * @param codeID
+	 * @return
+	 * @throws SQLException
+	 */
+	public  String getCode(String codeID) throws SQLException {
+		String result = new String("");
+		ResultSet rs = null;
+		Statement stmt = null;
+		stmt = con.createStatement();
+		//根据用户ID获得该用户的密码
+		String sql = "SELECT codeInfo FROM code where codeID='"+codeID+"'";
+		rs = stmt.executeQuery(sql);
+		while(rs.next()) {			
+			result = rs.getString(1);
+		}
+		
+		if(rs!=null)
+		{
+			try{
+				rs.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
 
-
-
+	
 	public static void main(String[] args) {
 		
 		DBOperation dbop = new DBOperation();
 		
+		
 //		try {
-//			dbop.getRCAddr("2");
+//			dbop.getUpdateRCAddrByIP("hp", "119.90.140.59","tomcat");
 //		} catch (SQLException e) {
 //			e.printStackTrace();
 //		}
@@ -672,7 +1003,7 @@ public class DBOperation {
 //		} catch (SQLException e) {
 //		e.printStackTrace();
 //		}	
-//		
+////		
 //		try {
 //			dbop.updateHostIP("192.168.0.555", "192.168.0.122");
 //		} catch (SQLException e) {
@@ -680,15 +1011,21 @@ public class DBOperation {
 //			e.printStackTrace();
 //		}
 		
+//		try {
+////			dbop.insertOperation("192.168.0.555", "setupOracle");
+//			dbop.updateOpStatus(1, "downloading");
+//			//dbop.getOpStatus(3);
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		try {
-//			dbop.insertOperation("192.168.0.555", "setupOracle");
-//			dbop.updateOpStatus(3, "installing");
-			dbop.getOpStatus(3);
+//			dbop.insertHostappTable("192.168.0.2", "Tomcat", "1.0.0");
+//			dbop.deleteHostappTable("192.168.0.2", "Tomcat");
+			dbop.updateHostappTable("192.168.0.2", "Tomcat", "1.0.1");
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		
 	}
 }

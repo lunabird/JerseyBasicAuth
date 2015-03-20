@@ -64,8 +64,10 @@ public class AuthFilter implements ContainerRequestFilter {
 			String pwd = null;
 			String userId = null;
 			try {
-				pwd = opt.judge()[1];
-				userId = opt.judge()[0];
+				String[] values = opt.judge();
+				pwd = values[1];
+				userId = values[0];
+				opt.close();
 //				System.out.println(pwd+"----");
 //				System.out.println(password+"----");
 			} catch (SQLException e) {

@@ -30,15 +30,17 @@ public class VMScriptResource {
 	@Path("/upload")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response uploadFile(
-			@FormDataParam("ip") List<String> ip,
+			@QueryParam("ip") List<String> ip,
 			@FormDataParam("upload") InputStream is,
 			@FormDataParam("upload") FormDataContentDisposition formData) {
 		//脚本下载到服务器端的存储位置
 		String fileLocation = "c:/" + formData.getFileName();
+		System.out.println(fileLocation);
 		Response res = null;
 		try {
 			File f = saveFile(is, fileLocation);
 			String result = "Successfully File Uploaded on the path "+ fileLocation;
+			System.out.println(result);
 			VMScript vs = new VMScript();
 			if(ip.size()==1){
 				JSONObject json = new JSONObject();
@@ -59,9 +61,9 @@ public class VMScriptResource {
 				res = Response.ok(jarr).build();
 			}
 			//删除临时脚本
-			if (f.isFile() && f.exists()) {
-				f.delete();
-			}
+//			if (f.isFile() && f.exists()) {
+//				f.delete();
+//			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {

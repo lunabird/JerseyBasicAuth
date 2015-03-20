@@ -29,7 +29,6 @@
     <servlet-name>Authentication</servlet-name>
     <servlet-class>sample.hello.resources.Authentication</servlet-class>
   </servlet>
-  
   <servlet-mapping>
     <servlet-name>Jersey REST Service</servlet-name>
     <url-pattern>/rest/*</url-pattern>
@@ -43,9 +42,9 @@
     <url-pattern>/Authentication</url-pattern>
   </servlet-mapping>
   
-  <!-- <listener>
+ <listener>
     <description>Socket服务随web启动而启动</description>
     <listener-class>sample.hello.resources.ServerSocketListener</listener-class>
-  </listener> -->
+  </listener> 
   
 </web-app>

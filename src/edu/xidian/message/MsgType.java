@@ -14,7 +14,7 @@ public enum MsgType {
 	/**
 	 * 应用软件部署-9100
 	 */
-	setupTomcat, setupJdk, setupMySql, setupApache, setupNginx, setupZendGuardLoader, setupPython, setupMemcached, setupIISRewrite, setupFTP,  setupSQLServer2008R2, setupSQLServer2000, setupOracle10g, setupOracle11g, setup360,
+	setupTomcat, setupJdk, setupMySql, setupApache, setupNginx, setupZendGuardLoader, setupPython, setupMemcached, setupIISRewrite, setupFTP,  setupSQLServer2008R2, setupSQLServer2000, setupOracle10g, setupOracle11g, setup360,setupSQLServer2008R2Interface, setupSQLServer2000Interface, setupOracle10gInterface, setupOracle11gInterface,
 	/**
 	 * 应用软件卸载-9600
 	 */
@@ -23,6 +23,10 @@ public enum MsgType {
 	 * 应用软件配置-9200
 	 */
 	configTomcat, configJdk, configMySql, configApache, configNginx, configZendGuardLoader, configPython, configMemcached, configIISRewrite, configFTP, configSQLServer2008R2, configSQLServer2000, configOracle10g, configOracle11g, config360,
+	/**
+	 * 获得应用软件的配置项
+	 */
+	getTomcatConfig,getJdkConfig,getMySqlConfig,getApacheConfig,getNginxConfig,getZendGuardLoaderConfig,getPythonConfig,getMemcachedConfig,getIISRewriteConfig,getFTPConfig,getSQLServer2008R2Config,getSQLServer2000Config,getOracle10gConfig,getOracle11gConfig,get360Config,
 	/**
 	 * 应用软件更新-9300
 	 */
@@ -35,6 +39,10 @@ public enum MsgType {
 	 * 操作状态获取-9500
 	 */
 	getDownloadStatus,
+	/**
+	 * 错误密钥加密
+	 */
+	errorKey,
 	/**
 	 * 重启-9700
 	 */

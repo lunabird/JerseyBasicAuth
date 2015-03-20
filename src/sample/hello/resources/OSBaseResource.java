@@ -38,9 +38,9 @@ public class OSBaseResource {
 		JSONObject entity = new JSONObject();
 		OSBase ob = new OSBase();
 		try {
-//			String result = ob.sendChangePasswdMsg(ip, userName, passwd);
-//			entity.put("response",result);
-			entity.put("response","OKOKOKOK");
+			String result = ob.sendChangePasswdMsg(ip, userName, passwd);
+			entity.put("response",result);
+			//entity.put("response","OKOKOKOK");
 			res = Response.ok(entity).build();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

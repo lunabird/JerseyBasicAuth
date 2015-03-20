@@ -36,15 +36,26 @@ public class AESUtil {
         try {   
         		DBOperation db = new DBOperation();        		
         	    String pwd = db.getAgentKey(hostIP);//得到的密文秘钥
+        	    db.close();
         	    String password = null;
 				try {
 					password = new String(new BASE64Decoder().decodeBuffer(pwd));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}//得到明文秘钥
+				}
+        	//String pwd = "12345678";
+        	//得到明文秘钥
+				if(password.equals("12345678")){
+					System.out.println("the same name ===================");
+				}
+				
                 KeyGenerator kgen = KeyGenerator.getInstance("AES");  
-                kgen.init(128, new SecureRandom(password.getBytes()));  
+               // kgen.init(128, new SecureRandom(password.getBytes()));  
+                SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG" );  
+                secureRandom.setSeed(password.getBytes());  
+                kgen.init(128,secureRandom); 
+
                 SecretKey secretKey = kgen.generateKey();  
                 byte[] enCodeFormat = secretKey.getEncoded();  
                 SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");  
@@ -84,10 +95,13 @@ public class AESUtil {
 	 */
 	public static byte[] decrypt(byte[] content, String hostIP) {  
         try {  
+        	System.out.println("**start****"+hostIP+"****"+content+"*****");
 	        	DBOperation db = new DBOperation();        		
 	    	    String pwd = null;
 				try {
 					pwd = db.getAgentKey(hostIP);
+					db.close();
+					System.out.println("shu ju ku pwd*"+pwd+"****");
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -95,12 +109,22 @@ public class AESUtil {
 	    	    String password = null;
 				try {
 					password = new String(new BASE64Decoder().decodeBuffer(pwd));
+					System.out.println("password*"+password+"*****"+password.length()+"***");
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}//得到明文秘钥
+        		//String pwd="12345678";
+				if(password.equals("12345678")){
+					System.out.println("the same name ===================");
+				}
                  KeyGenerator kgen = KeyGenerator.getInstance("AES");  
-                 kgen.init(128, new SecureRandom(password.getBytes()));  
+             //    kgen.init(128, new SecureRandom(password.getBytes()));  
+                 SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");  
+                 secureRandom.setSeed(password.getBytes());  
+                 kgen.init(128,secureRandom); 
+
                  SecretKey secretKey = kgen.generateKey();  
                  byte[] enCodeFormat = secretKey.getEncoded();  
                  SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");              
