@@ -135,9 +135,11 @@ public class AppResource {
 			for (int i = 0; i < ip.size(); i++) {
 				JSONObject entity = new JSONObject();// 表示要给用户返回的json对象
 				if (version.isEmpty()) {// 如果用户没有输入版本号，则程序需要自己选择一个版本号
+//					System.out.println("用户输入version为空！");
 					String os = dbop.getHostOSByIP(ip.get(i));
 					// 由程序选择数据库里最新的版本号
 					version = dbop.queryAppNewestVersion("tomcat", os);
+//					System.out.println("newest version in db = "+version);
 				}
 				int opID = 0;
 				// 判断该软件有没有在该虚拟机上安装过

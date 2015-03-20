@@ -373,11 +373,11 @@ public class DBOperation {
 	 * @brief 从hostapp表里查询软件版本号
 	 */
 	public String queryHostappTableForSoftwareVersion(String hostip,String software) throws SQLException{
-		String version = null;
+		String version = "";
 		Statement stmt = null;
 		stmt = con.createStatement();
 		ResultSet rs = null;
-		String sql = "SELECT version FROM hostapp WHERE hostip = '"+hostip+"',' and software='"+software+"'";
+		String sql = "SELECT version FROM hostapp WHERE hostip = '"+hostip+"' and software='"+software+"'";
 		rs = stmt.executeQuery(sql);
 		while(rs.next()){
 			version = rs.getString(1);
@@ -487,7 +487,8 @@ public class DBOperation {
 		Statement stmt = null;
 		ResultSet rs = null;
 		stmt = con.createStatement();
-		String sql = "SELECT version FROM rcinfo WHERE (softName='"+software+"' and os='"+os+"')";
+		String sql = "SELECT softVersion FROM rcinfo WHERE (softName='"+software+"' and OS='"+os+"')";
+		System.out.println("*********************************************************"+sql);
 		rs=stmt.executeQuery(sql);
 		ArrayList<String> versionList = new ArrayList<String>();
 		while(rs.next()) {
@@ -515,7 +516,33 @@ public class DBOperation {
 		}
 		return null;
 	}
-	
+	/**
+	 * 
+	 * @author huangpeng
+	 * @date 2015-3-20
+	 * @brief 查找op表，根据opID查询version
+	 */
+	public String queryOpTableForVersion(int opId) throws SQLException{
+		String version = "";
+		Statement stmt = null;
+		stmt = con.createStatement();
+		ResultSet rs = null;
+		String sql = "SELECT version FROM op WHERE opID = "+opId;
+		rs = stmt.executeQuery(sql);
+		while(rs.next()){
+			version = rs.getString(1);
+		}
+		if(stmt!=null)
+		{
+			try{
+				stmt.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return version;
+	}
 	/**@author XQ
 	 * 根据用户ID查询数据库获得该用户可以操作的主机及其所对应的软件中心地址列表
 	 * @param userID 用户ID
@@ -657,14 +684,14 @@ public class DBOperation {
 	 * @author huangpeng
 	 * @throws SQLException 
 	 * @date 2015-3-17
-	 * @brief 根据softPath获得version
+	 * @brief 查询rcinfo表，根据softPath获得version
 	 */
 	public String queryVersionBySoftPath(String softpath) throws SQLException{
 		String version = "";
 		Statement stmt = null;
 		ResultSet rs = null;
 		stmt = con.createStatement();
-		String sql = "SELECT version FROM rcinfo WHERE softPath='"+softpath+"'";
+		String sql = "SELECT softVersion FROM rcinfo WHERE softPath='"+softpath+"'";
 		rs=stmt.executeQuery(sql);
 		while(rs.next()){
 			version = rs.getString(1);
@@ -719,7 +746,7 @@ public class DBOperation {
 			}
 			//获得要安装软件的路径
 			
-			sql = "SELECT softPath FROM rcinfo where RCAddress= '"+RCAddress+"' and softName='"+softName.toLowerCase()+"' and OS='"+OS+"' and version='"+ version+"'" ;
+			sql = "SELECT softPath FROM rcinfo where RCAddress= '"+RCAddress+"' and softName='"+softName.toLowerCase()+"' and OS='"+OS+"' and softVersion='"+ version+"'" ;
 			rs =stmt.executeQuery(sql);
 			if(rs.next()) {
 				System.out.println("softPath:" + rs.getString(1));

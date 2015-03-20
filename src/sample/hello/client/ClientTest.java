@@ -25,13 +25,13 @@ public class ClientTest {
 		System.out.println(time);
 		Client c = Client.create();
 		WebResource r = c
-				.resource("http://119.90.140.60:8080/JerseyBasicAuth/rest/");
+				.resource("http://localhost:8080/JerseyBasicAuth/rest/");
 		
 		
 		
 		//installTomcat(r,time);
-		//uninstallTomcat(r,time);
-		//updateTomcat(r,time);
+//		uninstallTomcat(r,time);
+		updateTomcat(r,time);
 		
 		//install360(r, time);
 		
@@ -59,7 +59,7 @@ public class ClientTest {
 		//installApache(r,time);
 		//ApacheParam(r,time);
 		//uninstallApache(r,time);
-		updateApache(r,time);
+//		updateApache(r,time);
 		
 	
 		
@@ -162,9 +162,10 @@ public class ClientTest {
 	 */
 	private static void installTomcat(WebResource r, String time) {
 		String response = r.path("AppInstallation/Tomcat")
-				.queryParam("ip", "119.90.140.59")
-				.queryParam("installPath", "C:\\")
+				.queryParam("ip", "192.168.0.199")
+				.queryParam("installPath", "C:\\software")
 				.queryParam("jdkPath", "C:\\Program Files\\Java\\jdk1.7.0_45")
+				.queryParam("version", "6.0.41")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -389,7 +390,7 @@ public class ClientTest {
 	 */
 	private static void uninstallTomcat(WebResource r, String time) {
 		String response = r.path("AppUninstall/Tomcat")
-				.queryParam("ip", "119.90.140.59")
+				.queryParam("ip", "192.168.0.199")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -562,9 +563,10 @@ public class ClientTest {
 	 */
 	private static void updateTomcat(WebResource r, String time) {
 		String response = r.path("AppUpdate/Tomcat")
-				.queryParam("ip", "119.90.140.59")
-				.queryParam("updatePath", "C:\\")
+				.queryParam("ip", "192.168.0.199")
+				.queryParam("updatePath", "C:\\software")
 				.queryParam("jdkPath", "C:\\Program Files\\Java\\jdk1.8.0_25")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);

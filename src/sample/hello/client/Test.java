@@ -13,8 +13,8 @@ public class Test {
 //		for(int i=0;i<ss.length-1;i++) {
 //			sb.append(ss[i]+"/");
 //		}
-		
-		System.out.println(ss[ss.length-1]);
+		"setupTomcat".substring(5, "setupTomcat".length());
+		System.out.println("setupTomcat".substring(5, "setupTomcat".length()));
 		
 	}
 

@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -96,6 +97,7 @@ class ResponseThread extends Thread {
 				MsgType opName = msg.getType();
 				int opId = Integer.parseInt(msg.getOpID());
 				System.out.println("opName:"+opName.name()+"***opID:"+opId+"***");
+				
 				/***
 				 * 2015-1-20 15:31更改
 				 */
@@ -196,6 +198,25 @@ class ResponseThread extends Thread {
 				System.out.println("*****opID:" + opId + "\t status:" + status
 						+ "\t opName:" + opName + "*****");
 				
+				
+				DBOperation dbop = new DBOperation();
+				String softVersion = dbop.queryOpTableForVersion(opId);
+				//如果是软件安装成功返回的编码，插入一条记录到hostapp表中
+				String regEx1 = "0x0100.00";
+				String regEx2 = "0x0200.00";
+				String regEx3 = "0x0400.00";
+				if(Pattern.matches(regEx1, status)){
+					dbop.insertHostappTable(socket.getInetAddress().getHostAddress(),opName.toString().substring(5, opName.toString().length()),softVersion);
+				}
+				//如果是软件卸载成功返回的编码，删除一条记录到hostapp表中
+				else if(Pattern.matches(regEx2, status)){
+					dbop.deleteHostappTable(socket.getInetAddress().getHostAddress(), opName.toString().substring(9, opName.toString().length()));
+				}
+				//如果是软件更新成功返回的编码，更新一条记录到hostapp表中
+				else if(Pattern.matches(regEx3, status)){
+					dbop.updateHostappTable(socket.getInetAddress().getHostAddress(),  opName.toString().substring(6, opName.toString().length()), softVersion);
+				}
+				
 				//Linux Oracle安装
 				if(opName.equals(MsgType.setupOracle11g)&&status.equals("0x0100C10")) {
 					ChangeService cep = new ChangeService("wenyanqi", "123456");  
@@ -218,7 +239,7 @@ class ResponseThread extends Thread {
 				} else {
 
 				// 在数据库里查询opID对应的记录，改变其status
-				DBOperation dbop = new DBOperation();
+//				DBOperation dbop = new DBOperation();
 				dbop.updateOpStatus(opId, status);
 				dbop.close();
 
