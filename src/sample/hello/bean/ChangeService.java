@@ -9,7 +9,15 @@ import java.io.IOException;
 import java.io.InputStream;  
 import java.io.InputStreamReader;  
 import java.io.OutputStream;  
-  
+
+
+/**
+ * @brief Oracle界面安装的一些特殊情况处理
+ * @author wyq
+ * @version 
+ * @date 2015-3-30 下午6:09:10 
+ *
+ */
 public class ChangeService {  
     private String username = "";  
     private String oldpassword = "";  

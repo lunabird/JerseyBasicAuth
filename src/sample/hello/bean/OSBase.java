@@ -19,11 +19,6 @@ import edu.xidian.message.Message;
 import edu.xidian.message.MsgType;
 
 public class OSBase {
-//	public static void main(String[] args){
-//		OSBase ob = new OSBase();
-//		ob.sendChangePasswdMsg("uid321321", "192.168.0.202", "Administrator", "5413");
-//	}
-	
 	/**
 	 * 将基础环境配置事件插入到数据库中
 	 * @param hostIp

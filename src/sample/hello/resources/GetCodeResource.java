@@ -27,14 +27,13 @@ public class GetCodeResource {
 	@Path("/GetCodeInfo")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response configTomcat(
-			@QueryParam("codeID") String codeID
-			) throws JSONException {
+	public Response configTomcat(@QueryParam("codeID") String codeID)
+			throws JSONException {
 		Response res = null;
 		JSONObject entity = new JSONObject();
 		GetCodeBase a = new GetCodeBase();
 		String result = a.getCodeInfo(codeID);
-		entity.put("response",result);
+		entity.put("response", result);
 		res = Response.ok(entity).build();
 		return res;
 	}

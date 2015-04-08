@@ -9,6 +9,14 @@ import java.sql.Statement;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+
+/**
+ * @brief 数据库连接类
+ * @author huangpeng
+ * @version 
+ * @date 2015-3-30 下午6:06:15 
+ *
+ */
 public class DBConnManager {
 	private static ComboPooledDataSource cpds=new ComboPooledDataSource(true); 
 	
@@ -45,14 +53,5 @@ public class DBConnManager {
 		}
 		return null;
 	}
-	
-	
-	
-	
-
-	
-	
-	
-	
 	
 }

@@ -49,10 +49,16 @@ public class ProgressQuery {
 		 * 2015-1-21新增
 		 */
 		String detailInfo = dbop.getOpDetailInfo(eid);
-		System.out.println("detailInfo " + detailInfo);
+		if(detailInfo==null){
+			entity.put("category", category);
+			entity.put("detailInfo", detailInfo);
+			dbop.close();
+			res = Response.ok(entity).build();
+			return res;
+		}
 		// 若是图片则转为字符串
 		String regex = "([a-z]|[A-Z]):(/(\\S)+)+\\.jpg";
-		if (detailInfo.matches(regex)) {
+		if ((!detailInfo.isEmpty())&&(detailInfo.matches(regex))) {
 			category = 1;
 			try {
 				detailInfo = readFile(detailInfo);

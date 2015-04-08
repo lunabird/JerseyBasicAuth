@@ -26,7 +26,7 @@ public class ClientLinuxTest {
 		System.out.println(time);
 		Client c = Client.create();
 		WebResource r = c
-				.resource("http://119.90.140.165:8080/JerseyBasicAuth/rest/");
+				.resource("http://119.90.140.60:8080/JerseyBasicAuth/rest/");
 		
 		//uninstallOracle11gLinux(r,time);
 		//installOracle11gLinux(r,time);
@@ -742,8 +742,7 @@ public class ClientLinuxTest {
 				.queryParam("ip", ip).type(MediaType.MULTIPART_FORM_DATA_TYPE)
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).post(ClientResponse.class, multiPart);
-		System.out.println("Response: " + clientResp.getClientResponseStatus()
-				+ "\n");
+		System.out.println(clientResp.getEntity(JSONObject.class));
 	}
 
 	/**

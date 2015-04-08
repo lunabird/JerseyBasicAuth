@@ -97,7 +97,6 @@ public class AppParamConfiguration {
 						updateOpStatus(opID, "0x0300200");
 						return "0x0300200";
 					}
-					
 				}
 			}
 			socket.close();

@@ -1,6 +1,4 @@
 package sample.DBOP;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -17,13 +15,18 @@ import java.util.Calendar;
 import java.util.List;
 
 import edu.xidian.enc.AESUtil;
-import edu.xidian.enc.MD5Util;
 import edu.xidian.enc.SerializeUtil;
 import edu.xidian.message.Message;
 import edu.xidian.message.MsgType;
 
+/**
+ * @brief 数据库操作类，对表的增删改查等操作
+ * @author huangpeng
+ * @version 
+ * @date 2015-3-30 下午6:06:57 
+ *
+ */
 public class DBOperation {
-
 
 	private Connection con = null;
 	
@@ -121,7 +124,7 @@ public class DBOperation {
 	 * @return 
 	 * @throws SQLException
 	 */
-	public boolean updateOpStatus(int opID,String status) throws SQLException{
+	public synchronized boolean updateOpStatus(int opID,String status) throws SQLException{
 		Statement stmt = null;
 		stmt = con.createStatement();
 		// 插入新纪录到opinfo表
@@ -164,7 +167,7 @@ public class DBOperation {
 	 * @throws SQLException
 	 * 
 	 */
-	public boolean updateOpStatus(int opID, String status, String detailInfo) throws SQLException{
+	public synchronized boolean updateOpStatus(int opID, String status, String detailInfo) throws SQLException{
 		Statement stmt = null;
 		stmt = con.createStatement();
 		// 插入新纪录到opinfo表
@@ -215,7 +218,18 @@ public class DBOperation {
 		String spName = null;
 		if (rs.next()) {
 			hostIp = rs.getString("hostIp");
-			sName = rs.getString("opName").split("-")[1];
+			//如果是软件安装相关活动
+			sName = rs.getString("opName");
+			if(sName.contains("-")){
+				sName = rs.getString("opName").split("-")[1];
+			}else{//是虚拟机执行脚本的活动
+				String sqll = "SELECT status FROM opinfo WHERE opID=" + opID +" ORDER BY time DESC LIMIT 1";
+				rs = stmt.executeQuery(sqll);
+				if (rs.next()) {
+					 return rs.getString("status");			
+				}
+			}
+			
 		}
 		// 再根据软件名字查rcinfo表，获取该软件对应的 安装包名spName
 //		if(flag.equals("true")) {
@@ -305,7 +319,7 @@ public class DBOperation {
 		ResultSet rs = null;
 		stmt = con.createStatement();
 		//查询opinfo表,获取最新的一条记录
-		String sql = "SELECT status FROM opinfo WHERE opID='"+opID+"' ORDER BY time DESC LIMIT 1";
+		String sql = "SELECT detailInfo FROM opinfo WHERE opID='"+opID+"' ORDER BY time DESC LIMIT 1";
 		System.out.println(sql);
 		rs = stmt.executeQuery(sql);
 		if(rs.next()){
@@ -400,7 +414,7 @@ public class DBOperation {
 	 * @brief 向hostapp表里插入一条记录。hostapp表存储的信息是每台虚拟机上安装的软件及其版本。
 	 * 		    每当有软件安装成功后，会在hostapp表里增加一条记录。
 	 */
-	public void insertHostappTable(String hostip,String software,String version) throws SQLException{
+	public synchronized void insertHostappTable(String hostip,String software,String version) throws SQLException{
 		Statement stmt = null;
 		stmt = con.createStatement();
 		String sql = "INSERT INTO  hostapp(hostip,software,version) VALUES ('"+hostip+"','"+software+"','"+version+"')";
@@ -422,7 +436,7 @@ public class DBOperation {
 	 * @brief 向hostapp表里删除一条记录。hostapp表存储的信息是每台虚拟机上安装的软件及其版本。
 	 * 		    每当有软件卸载成功后，会在hostapp表里删除一条记录。
 	 */
-	public void deleteHostappTable(String hostip,String software) throws SQLException{
+	public synchronized void deleteHostappTable(String hostip,String software) throws SQLException{
 		Statement stmt = null;
 		stmt = con.createStatement();
 		String sql = "DELETE FROM hostapp WHERE (hostip='"+hostip+"' and software='"+software+"')";
@@ -444,7 +458,7 @@ public class DBOperation {
 	 * @brief 向hostapp表里更新一条记录。hostapp表存储的信息是每台虚拟机上安装的软件及其版本。
 	 * 		    每当有软件更新成功后，会在hostapp表里更新一条记录。
 	 */
-	public void updateHostappTable(String hostip,String software,String version) throws SQLException{
+	public synchronized void updateHostappTable(String hostip,String software,String version) throws SQLException{
 		Statement stmt = null;
 		stmt = con.createStatement();
 		String sql = "UPDATE  hostapp  SET version ='"+version+"' WHERE (hostip='"+hostip+"' and software='"+software+"')";
@@ -896,32 +910,32 @@ public class DBOperation {
 		return result;
 	}
 	
-	/**@author WZY
-	 * 根据用户名的ID得到 用于的密码
-	 * @param userID 用户ID
-	 * @param time  系统当前时间
-	 * @param num 生成的随机数
-	 * @return
-	 */
-	public int  updateAuthentication(String userID,String time, int num) throws SQLException{
-		Statement stmt = null;
-		stmt = con.createStatement();
-		//获得该用户可操作的所有主机
-		String sql = "UPDATE  userinfo  SET  time = '"+time+"' , "+"random = "+num+" WHERE userID='"+userID+"'";
-		System.out.println(sql);
-		int  flag =  stmt.executeUpdate(sql);
-		//释放资源
-		if(stmt!=null)
-		{
-			try{
-				stmt.close();
-			}catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-		return flag;
-	}
+//	/**@author WZY
+//	 * 根据用户名的ID得到 用于的密码
+//	 * @param userID 用户ID
+//	 * @param time  系统当前时间
+//	 * @param num 生成的随机数
+//	 * @return
+//	 */
+//	public int  updateAuthentication(String userID,String time, int num) throws SQLException{
+//		Statement stmt = null;
+//		stmt = con.createStatement();
+//		//获得该用户可操作的所有主机
+//		String sql = "UPDATE  userinfo  SET  time = '"+time+"' , "+"random = "+num+" WHERE userID='"+userID+"'";
+//		System.out.println(sql);
+//		int  flag =  stmt.executeUpdate(sql);
+//		//释放资源
+//		if(stmt!=null)
+//		{
+//			try{
+//				stmt.close();
+//			}catch(Exception e)
+//			{
+//				e.printStackTrace();
+//			}
+//		}
+//		return flag;
+//	}
 
 	/**@author WZY
 	 * 根据AgentIp得到服务器端与agent共享秘钥

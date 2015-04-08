@@ -107,8 +107,12 @@ public class GetAppParamConfig {
 		updateOpStatus(opID, "0x0800201");
 		return "0x0800201";
 	}
-	
-	
+	/**
+	 * 获得MySql Linux的配置参数
+	 * @param ip
+	 * @param paramName
+	 * @return
+	 */
 	public String sendGetConfigMySqlLinuxMsg(String ip, String paramName) {
 		// 发送Socket消息给Agent
 		int opID=insertEvent(ip,"getMySqlConfig");

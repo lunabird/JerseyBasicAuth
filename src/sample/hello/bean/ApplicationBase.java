@@ -59,7 +59,7 @@ public class ApplicationBase {
 			//º”√‹
 			String datatemp = SerializeUtil.serialize(msg);  
 			byte[] str = AESUtil.encrypt(datatemp,ip);
-			System.out.println("fa song xiao xi");
+//			System.out.println("fa song xiao xi");
 			//¥´ ‰
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
@@ -1765,7 +1765,6 @@ public class ApplicationBase {
 					if (ret.equals("success") || ret.equals("executing")) {
 						return opID;
 					}
-					
 				}
 			}
 			socket.close();

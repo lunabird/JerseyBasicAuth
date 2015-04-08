@@ -22,14 +22,15 @@ public class SerializeUtil {
 	 * @throws IOException
 	 */
 	public static String serialize(Object original) throws IOException {
-		if(null==original) return null;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();  
-		ObjectOutputStream oos = new ObjectOutputStream(baos);  
-		oos.writeObject(original);  
+		if (null == original)
+			return null;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(original);
 		byte[] str = baos.toByteArray();
 		oos.close();
 		baos.close();
-		return new String(str,CHARSET_ISO88591);
+		return new String(str, CHARSET_ISO88591);
 	}
 	
 	/**@author ZXQ
@@ -40,9 +41,14 @@ public class SerializeUtil {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static Object deserialize(String serializedstr) throws UnsupportedEncodingException, IOException, ClassNotFoundException{
-		if(null==serializedstr)return null;
-		BufferedInputStream bis=new BufferedInputStream(new ByteArrayInputStream(serializedstr.getBytes(CHARSET_ISO88591)));
+	public static Object deserialize(String serializedstr)
+			throws UnsupportedEncodingException, IOException,
+			ClassNotFoundException {
+		if (null == serializedstr)
+			return null;
+		BufferedInputStream bis = new BufferedInputStream(
+				new ByteArrayInputStream(
+						serializedstr.getBytes(CHARSET_ISO88591)));
 		ObjectInputStream ois = new ObjectInputStream(bis);
 		Object obj = ois.readObject();
 		ois.close();

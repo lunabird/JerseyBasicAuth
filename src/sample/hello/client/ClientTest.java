@@ -7,10 +7,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -25,13 +26,13 @@ public class ClientTest {
 		System.out.println(time);
 		Client c = Client.create();
 		WebResource r = c
-				.resource("http://localhost:8080/JerseyBasicAuth/rest/");
+				.resource("http://119.90.140.60:8080/JerseyBasicAuth/rest/");
 		
 		
 		
-		//installTomcat(r,time);
+//		installTomcat(r,time);
 //		uninstallTomcat(r,time);
-		updateTomcat(r,time);
+//		updateTomcat(r,time);
 		
 		//install360(r, time);
 		
@@ -71,8 +72,8 @@ public class ClientTest {
 		//installIISRewrite(r, time);
 		
 		
-		//QueryProgress(r,time,"C:\\1.jpg","1178","false");
-		//getCodeInfo(r,time,"0x0400301");
+		//QueryProgress(r,time,"C:\\1.jpg","15","false");
+//		getCodeInfo(r,time,"0x0201000");
 	
 		//installFTP(r, time);		
 		//updateFTP(r,time);
@@ -89,7 +90,7 @@ public class ClientTest {
 			
 		//reboot(r,time);
 		// µ÷ÓÃ´úÂë
-		//changePWD(r, time);	
+		changePWD(r, time);	
 	
 		
 		
@@ -110,7 +111,7 @@ public class ClientTest {
 		// installNginxLinux(r,time);
 		// getParamZendGuardLoaderLinux(r,time);
 		// getParamFTP(r,time);
-		// vmScriptLinux(r,time,"C:\\Users\\Administrator\\Desktop\\script.sh");
+		 //vmScriptLinux(r,time,"C:\\Users\\Administrator\\Desktop\\script.sh");
 		// updateApacheLinux(r,time);
 		// updateFTPLinux(r,time);
 		// uninstallFTPLinux(r,time);
@@ -138,7 +139,7 @@ public class ClientTest {
 		// installTomcat(r,time);
 		// unistallTomcat(r, time);
 		// QueryProgress(r,time,"C:\\1.jpg","51","false");
-		// vmScript(r,time,"C:\\script.bat");
+		 //vmScript(r,time,"C:\\script.bat");
 		// TomcatParam(r, time);
 		// getParamTomcat(r, time);
 		// startOrStopService(r, time);
@@ -162,10 +163,10 @@ public class ClientTest {
 	 */
 	private static void installTomcat(WebResource r, String time) {
 		String response = r.path("AppInstallation/Tomcat")
-				.queryParam("ip", "192.168.0.199")
+				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:\\software")
 				.queryParam("jdkPath", "C:\\Program Files\\Java\\jdk1.7.0_45")
-				.queryParam("version", "6.0.41")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -182,6 +183,7 @@ public class ClientTest {
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:")
 				.queryParam("rootPswd", "repace")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -197,6 +199,7 @@ public class ClientTest {
 		String response = r.path("AppInstallation/Nginx")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:\\")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -212,6 +215,7 @@ public class ClientTest {
 		String response = r.path("AppInstallation/ZendGuardLoader")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("phpPath", "C:\\php")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -226,6 +230,7 @@ public class ClientTest {
 	private static void installMemcached(WebResource r, String time) {
 		String response = r.path("AppInstallation/Memcached")
 				.queryParam("ip", "119.90.140.59")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -242,6 +247,7 @@ public class ClientTest {
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:\\Apache1\\")
 				.queryParam("emailAddress", "123@123.com")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -256,6 +262,7 @@ public class ClientTest {
 	private static void installPython(WebResource r, String time) {
 		String response = r.path("AppInstallation/Python")
 				.queryParam("ip", "119.90.140.59")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -271,6 +278,7 @@ public class ClientTest {
 		String response = r.path("AppInstallation/IISRewrite")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:\\iisRewrite\\")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -286,6 +294,7 @@ public class ClientTest {
 		String response = r.path("AppInstallation/FTP")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:\\FileZilla_Server-0_9_45\\")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -304,6 +313,7 @@ public class ClientTest {
 				.queryParam("rootPswd", "repace")
 				.queryParam("hostName", "CLJAZITTFGVDGF8")
 				.queryParam("userName", "Administrator")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -324,6 +334,7 @@ public class ClientTest {
 				.queryParam("oraclebase", "C:\\app\\wenyanqi")
 				.queryParam("oraclehome", "dbhome1")
 				.queryParam("rootPswd", "123456QWq")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -343,6 +354,7 @@ public class ClientTest {
 				.queryParam("rootPswd", "repace")
 				.queryParam("hostName", "CLJAZITTFGVDGF8")
 				.queryParam("userName", "Administrator")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -362,6 +374,7 @@ public class ClientTest {
 				.queryParam("inventorypath", "C:\\app\\wenyanqi\\oradata")
 				.queryParam("databasename", "orcl")
 				.queryParam("rootPswd", "123456QWq")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -377,6 +390,7 @@ public class ClientTest {
 		String response = r.path("AppInstallation/360")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("installPath", "C:\\360\\")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -390,7 +404,7 @@ public class ClientTest {
 	 */
 	private static void uninstallTomcat(WebResource r, String time) {
 		String response = r.path("AppUninstall/Tomcat")
-				.queryParam("ip", "192.168.0.199")
+				.queryParam("ip", "119.90.140.59")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -465,7 +479,7 @@ public class ClientTest {
 	private static void uninstallMemcached(WebResource r, String time) {
 		String response = r.path("AppUninstall/Memcached")
 				.queryParam("ip", "119.90.140.59")
-				.queryParam("softName", "memcached.exe")
+				.queryParam("softName", "memcached64.exe")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -563,7 +577,7 @@ public class ClientTest {
 	 */
 	private static void updateTomcat(WebResource r, String time) {
 		String response = r.path("AppUpdate/Tomcat")
-				.queryParam("ip", "192.168.0.199")
+				.queryParam("ip", "119.90.140.59")
 				.queryParam("updatePath", "C:\\software")
 				.queryParam("jdkPath", "C:\\Program Files\\Java\\jdk1.8.0_25")
 				.queryParam("version", "")
@@ -584,6 +598,7 @@ public class ClientTest {
 				.queryParam("uninstallPath", "C:")
 				.queryParam("updatePath", "C:")
 				.queryParam("rootPswd", "repace")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -600,6 +615,7 @@ public class ClientTest {
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("updatePath", "C:\\")
 				.queryParam("unistallPath", "C:\\nginx-1.2.8")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -615,6 +631,7 @@ public class ClientTest {
 		String response = r.path("AppUpdate/ZendGuardLoader")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("phpPath", "C:\\php")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -630,6 +647,7 @@ public class ClientTest {
 		String response = r.path("AppUpdate/Memcached")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("unistallName", "memcached64.exe")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -646,6 +664,7 @@ public class ClientTest {
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("updatePath", "C:\\Apache24")
 				.queryParam("emailAddress", "123@123.com")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -660,6 +679,7 @@ public class ClientTest {
 	private static void updatePython(WebResource r, String time) {
 		String response = r.path("AppUpdate/Python")
 				.queryParam("ip", "119.90.140.59")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -675,6 +695,7 @@ public class ClientTest {
 		String response = r.path("AppUpdate/FTP")
 				.queryParam("ip", "119.90.140.59")
 				.queryParam("updatePath", "C:\\FileZilla_Server-0_9_48")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);
@@ -861,12 +882,19 @@ public class ClientTest {
 					.bodyPart(new FileDataBodyPart("upload", fileToUpload,
 							MediaType.APPLICATION_OCTET_STREAM_TYPE)));
 		}
-		final ClientResponse clientResp = r.path("vmScript/upload")
-				.queryParam("ip", ip).type(MediaType.MULTIPART_FORM_DATA_TYPE)
+//		final ClientResponse clientResp = r.path("vmScript/upload")
+//				.queryParam("ip", ip)
+//				.type(MediaType.MULTIPART_FORM_DATA_TYPE)
+//				.header("password", "EDGM@MAMABDACFDLLG")
+//				.header("time", time)
+//				.post(ClientResponse.class, multiPart);
+		ClientResponse response = r.path("vmScript/upload")
+				.queryParam("ip", ip)
+				.type(MediaType.MULTIPART_FORM_DATA_TYPE)
 				.header("password", "EDGM@MAMABDACFDLLG")
-				.header("time", time).post(ClientResponse.class, multiPart);
-		System.out.println("Response: " + clientResp.getClientResponseStatus()
-				+ "\n");
+				.header("time", time)
+				.post(ClientResponse.class, multiPart);
+		System.out.println(response.getEntity(JSONObject.class));		
 	}
 
 	/**
@@ -1172,22 +1200,21 @@ public class ClientTest {
 //
 //	}
 //
-//	public static void vmScriptLinux(WebResource r, String time, String FilePath) {
-//		final File fileToUpload = new File(FilePath);
-//		FormDataMultiPart multiPart = new FormDataMultiPart();
-//		String ip = "119.90.140.253";
-//		if (fileToUpload != null) {
-//			multiPart = ((FormDataMultiPart) multiPart
-//					.bodyPart(new FileDataBodyPart("upload", fileToUpload,
-//							MediaType.APPLICATION_OCTET_STREAM_TYPE)));
-//		}
-//		final ClientResponse clientResp = r.path("vmScript/upload")
-//				.queryParam("ip", ip).type(MediaType.MULTIPART_FORM_DATA_TYPE)
-//				.header("password", "EDGM@MAMABDACFDLLG")
-//				.header("time", time).post(ClientResponse.class, multiPart);
-//		System.out.println("Response: " + clientResp.getClientResponseStatus()
-//				+ "\n");
-//	}
+	public static void vmScriptLinux(WebResource r, String time, String FilePath) {
+		final File fileToUpload = new File(FilePath);
+		FormDataMultiPart multiPart = new FormDataMultiPart();
+		String ip = "119.90.140.253";
+		if (fileToUpload != null) {
+			multiPart = ((FormDataMultiPart) multiPart
+					.bodyPart(new FileDataBodyPart("upload", fileToUpload,
+							MediaType.APPLICATION_OCTET_STREAM_TYPE)));
+		}
+		final ClientResponse clientResp = r.path("vmScript/upload")
+				.queryParam("ip", ip).type(MediaType.MULTIPART_FORM_DATA_TYPE)
+				.header("password", "EDGM@MAMABDACFDLLG")
+				.header("time", time).post(ClientResponse.class, multiPart);
+		System.out.println(clientResp.getEntity(JSONObject.class));
+	}
 //
 //	private static void getParamFTP(WebResource r, String time) {
 //		String response = r.path("GetAppParamConfig/FTP")
@@ -1392,15 +1419,15 @@ public class ClientTest {
 //		System.out.println(response);
 //	}
 //	
-//	public static void ulimit(WebResource r, String time) {
-//		String response = r.path("OSBase/ulimit_Linux")
-//				.queryParam("ip", "119.90.140.253")
-//				.queryParam("ulimit", "65535")
-//				.header("password", "EDGM@MAMABDACFDLLG")
-//				.header("time", time).type(MediaType.APPLICATION_JSON)
-//				.put(String.class);
-//		System.out.println(response);
-//	}
+	public static void ulimit(WebResource r, String time) {
+		String response = r.path("OSBase/ulimit_Linux")
+				.queryParam("ip", "119.90.140.253")
+				.queryParam("ulimit", "65535")
+				.header("password", "EDGM@MAMABDACFDLLG")
+				.header("time", time).type(MediaType.APPLICATION_JSON)
+				.put(String.class);
+		System.out.println(response);
+	}
 //	
 //	
 //
@@ -1432,6 +1459,7 @@ public class ClientTest {
 				.queryParam("oracle_sid", "orcl")
 				.queryParam("rootPswd", "123456QWq")
 				.queryParam("oradata", "/u01/app/oradata")
+				.queryParam("version", "")
 				.header("password", "EDGM@MAMABDACFDLLG")
 				.header("time", time).type(MediaType.APPLICATION_JSON)
 				.post(String.class);

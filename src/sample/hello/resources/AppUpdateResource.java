@@ -317,7 +317,7 @@ public class AppUpdateResource {
 		try {
 			String os = dbop.getHostOSByIP(ip);
 			// 由程序选择数据库里最新的版本号
-			String newestV = dbop.queryAppNewestVersion("aapche", os);
+			String newestV = dbop.queryAppNewestVersion("apache", os);
 			if (version.isEmpty()) {
 				version = newestV;
 			}

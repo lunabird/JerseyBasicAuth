@@ -152,7 +152,7 @@ public class AESUtil {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		/*Message msg = new Message(MsgType.setupTomcat, "12","12345678");
+		Message msg = new Message(MsgType.setupTomcat, "12","12345678");
 		String content = SerializeUtil.serialize(msg);  
 		//String password = "12345678"; 
 		String hostIP = "127.0.0.1";
@@ -166,47 +166,48 @@ public class AESUtil {
 		byte[] decryptResult = decrypt(bb,hostIP);  
 		System.out.println("Ω‚√‹∫Û£∫" + new String(decryptResult,"ISO-8859-1"));
 		msg = (Message)SerializeUtil.deserialize( new String(decryptResult,"ISO-8859-1"));
-		System.out.println(msg.getType().name());*/
-		String a = "123456";
+		System.out.println(msg.getType().name());
 		
-		System.out.println(convertMD5(string2MD5(a)));
 		//System.out.println(convertMD5(convertMD5(a)));
+		
+//		String a = "123456";
+//		System.out.println(convertMD5(string2MD5(a)));
 	}
 
-	private static String convertMD5(String inStr) {
-
-		char[] a = inStr.toCharArray();
-		for (int i = 0; i < a.length; i++) {
-			a[i] = (char) (a[i] ^ 't');
-		}
-		String s = new String(a);
-		return s;
-
-	}
-	public static String string2MD5(Object  obj) {
-		MessageDigest md5 = null;
-		try {
-			md5 = MessageDigest.getInstance("MD5");
-		} catch (Exception e) {
-			System.out.println(e.toString());
-			e.printStackTrace();
-			return "";
-		}
-		char[] charArray = obj.toString().toCharArray();
-		byte[] byteArray = new byte[charArray.length];
-
-		for (int i = 0; i < charArray.length; i++)
-			byteArray[i] = (byte) charArray[i];
-		byte[] md5Bytes = md5.digest(byteArray);
-		StringBuffer hexValue = new StringBuffer();
-		for (int i = 0; i < md5Bytes.length; i++) {
-			int val = ((int) md5Bytes[i]) & 0xff;
-			if (val < 16)
-				hexValue.append("0");
-			hexValue.append(Integer.toHexString(val));
-		}
-		return hexValue.toString();
-
-	}
+//	private static String convertMD5(String inStr) {
+//
+//		char[] a = inStr.toCharArray();
+//		for (int i = 0; i < a.length; i++) {
+//			a[i] = (char) (a[i] ^ 't');
+//		}
+//		String s = new String(a);
+//		return s;
+//
+//	}
+//	public static String string2MD5(Object  obj) {
+//		MessageDigest md5 = null;
+//		try {
+//			md5 = MessageDigest.getInstance("MD5");
+//		} catch (Exception e) {
+//			System.out.println(e.toString());
+//			e.printStackTrace();
+//			return "";
+//		}
+//		char[] charArray = obj.toString().toCharArray();
+//		byte[] byteArray = new byte[charArray.length];
+//
+//		for (int i = 0; i < charArray.length; i++)
+//			byteArray[i] = (byte) charArray[i];
+//		byte[] md5Bytes = md5.digest(byteArray);
+//		StringBuffer hexValue = new StringBuffer();
+//		for (int i = 0; i < md5Bytes.length; i++) {
+//			int val = ((int) md5Bytes[i]) & 0xff;
+//			if (val < 16)
+//				hexValue.append("0");
+//			hexValue.append(Integer.toHexString(val));
+//		}
+//		return hexValue.toString();
+//
+//	}
 
 }

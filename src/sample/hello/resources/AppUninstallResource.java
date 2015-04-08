@@ -638,17 +638,44 @@ public class AppUninstallResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uninstallIISRewrite(@QueryParam("ip") String ip) {
+//		Response res = null;
+//		ApplicationUninstallBase a = new ApplicationUninstallBase();
+//		JSONObject entity = new JSONObject();
+//
+//		try {
+//
+//			int eid = a.sendUninstallIISRewriteMsg(ip);
+//			entity.put("eid", eid);
+//			entity.put("status", "虚拟机已接收卸载IISRewrite请求可查询状态");
+//			res = Response.ok(entity).build();
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return res;
 		Response res = null;
 		ApplicationUninstallBase a = new ApplicationUninstallBase();
 		JSONObject entity = new JSONObject();
+		DBOperation dbop = new DBOperation();
 
 		try {
-
-			int eid = a.sendUninstallIISRewriteMsg(ip);
-			entity.put("eid", eid);
-			entity.put("status", "虚拟机已接收卸载IISRewrite请求可查询状态");
+			// 判断该软件有没有在该虚拟机上安装过
+			String dbSoftVersion = dbop.queryHostappTableForSoftwareVersion(ip,
+					"iisrewrite");
+			if (dbSoftVersion.isEmpty()) {// 表示该软件没有在该虚拟机上安装过，却要卸载，返回错误码0x0201000
+				entity.put("code", "0x0201000");
+			} else {// 软件已安装，正常卸载
+					// 将消息发送给Agent成功以后，返回一个代表操作id的代号eid，同时这也是数据库中存储的代表该操作的eid
+				int eid = a.sendUninstallIISRewriteMsg(ip);
+				entity.put("eid", eid);
+				entity.put("status", "虚拟机已接收卸载iisrewrite请求可查询状态");
+			}
+			dbop.close();
 			res = Response.ok(entity).build();
 		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

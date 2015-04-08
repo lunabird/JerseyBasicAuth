@@ -282,12 +282,34 @@ public class GetAppParamConfigResource {
 	public Response configIISRewrite(@QueryParam("ip") String ip,
 			@QueryParam("cfgFilePath") String cfgFilePath,
 			@QueryParam("paramName") String paramName) throws JSONException {
+//		Response res = null;
+//		JSONObject entity = new JSONObject();
+//		GetAppParamConfig a = new GetAppParamConfig();
+//		String result = a
+//				.sendGetConfigIISRewriteMsg(ip, cfgFilePath, paramName);
+//		entity.put("response", result);
+//		res = Response.ok(entity).build();
+//		return res;
 		Response res = null;
 		JSONObject entity = new JSONObject();
+		DBOperation dbop = new DBOperation();
 		GetAppParamConfig a = new GetAppParamConfig();
-		String result = a
-				.sendGetConfigIISRewriteMsg(ip, cfgFilePath, paramName);
-		entity.put("response", result);
+		// 判断该软件有没有在该虚拟机上安装过
+		String dbSoftVersion;
+		try {
+			dbSoftVersion = dbop.queryHostappTableForSoftwareVersion(ip,
+					"iisrewrite");
+			if (dbSoftVersion.isEmpty()) {// 表示该软件没有在该虚拟机上安装过，却要获取配置信息，提示错误码0x0801000
+				entity.put("code", "0x0801000");
+			} else {// 软件已经安装，正常获取配置信息,发消息给代理软件
+				String result = a.sendGetConfigIISRewriteMsg(ip, cfgFilePath, paramName);
+				entity.put("response", result);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		dbop.close();
 		res = Response.ok(entity).build();
 		return res;
 	}
